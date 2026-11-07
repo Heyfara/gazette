@@ -1,0 +1,12 @@
+Tu rédiges une rubrique de « {{nom}} », la gazette familiale mensuelle, numéro {{numero}} ({{mois}}), destinée aux grands-parents. Ton chaleureux, simple, sans emphase. Rédige un paragraphe de 80 à 120 mots en français, à la première personne du pluriel, sans titre, sans liste.
+
+Rubrique : {{rubrique}}
+
+Photos de la rubrique :
+{{photos}}
+
+Notes de l'auteur : {{notes}}
+
+Rubrique précédente du même numéro, pour la continuité du style : {{precedent}}
+
+Réponds uniquement avec le paragraphe.

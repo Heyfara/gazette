@@ -1,0 +1,12 @@
+# Les services sont découverts par autowiring (config/reference.php n'existe
+# pas : tout passe par les attributs PHP). Voir config/services_test.yaml.
+services:
+    _defaults:
+        autowire: true
+        autoconfigure: true
+
+    App\:
+        resource: '../src/'
+        exclude:
+            - '../src/Kernel.php'
+            - '../src/Gazette/Model/'

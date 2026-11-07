@@ -1,0 +1,19 @@
+framework:
+    cache:
+        prefix_seed: homelab/gazette
+        pools:
+            # Miniatures Immich relayées : sur disque, même en prod.
+            cache.images:
+                adapter: cache.adapter.filesystem
+
+when@prod:
+    framework:
+        cache:
+            app: cache.adapter.apcu
+
+# En test, cache.images reste sur disque (var/cache/test) : un adaptateur en
+# mémoire serait vidé entre deux requêtes du même test. ApiTest le vide au départ.
+when@test:
+    framework:
+        cache:
+            app: cache.adapter.array
