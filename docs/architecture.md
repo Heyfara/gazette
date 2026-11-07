@@ -56,13 +56,20 @@ numéro reste lisible si une photo est supprimée d'Immich.
 | PUT | `/api/issues/{id}/sections-order` | `{ order: [sid…] }` |
 | GET | `/api/issues/{id}/sections/{sid}/prompt` | le prompt à coller |
 | GET | `/api/issues/{id}/preview` | page HTML du numéro, photos relayées |
+| POST | `/api/issues/{id}/prepare` | photos recompressées et déposées dans Listmonk, campagne créée ou mise à jour (idempotent) |
+| GET | `/api/issues/{id}/mail-preview` | le mail rendu par Listmonk, template compris (prépare au passage) |
+| POST | `/api/issues/{id}/test` | envoi de test (`GAZETTE_TEST_EMAILS`) ; statut `teste` |
+| POST | `/api/issues/{id}/send` | envoi à la liste, exige un test avant ; statut `envoye`, numéro figé |
+| GET | `/api/issues/{id}/campaign` | état de la campagne Listmonk (`null` sans campagne) |
 | GET | `/api/immich/albums`, `/api/immich/people` | listes Immich |
 | GET | `/api/immich/search?album=…` ou `?from=&to=`, `&person=`, `&cursor=` | photos (60 par page, `nextCursor`) |
 | GET | `/api/immich/assets/{id}/{thumbnail\|preview}`, `/api/immich/people/{id}/thumbnail` | images relayées, cache 24 h |
 
 Les écritures sont refusées quand elles viennent d'un autre site
 (`SameSiteWrites` : `Sec-Fetch-Site`, `Origin`), et exigent un corps JSON.
-Un numéro envoyé (`status: envoye`) répond 409 à toute modification.
+Un numéro envoyé (`status: envoye`) répond 409 à toute modification, comme un
+numéro qui ne peut pas partir (`NotSendableException` : vide, pas de test,
+liste ou template Listmonk absents).
 
 ## Immich
 
@@ -77,16 +84,26 @@ les garde 24 h dans le pool `cache.images` (disque). En prod, l'appli joint
 Immich comme le dashboard : par son nom `.home`, avec la CA mkcert
 (`TLS_CA_FILE`) et le DNS du homelab.
 
+## Envoi (Listmonk)
+
+`IssueSender` : `prepare()` lit la preview Immich de chaque photo sans
+`mediaUrl`, la recompresse (`PhotoCompressor`, GD, 1200 px, ~250 Ko), la
+dépose dans la médiathèque Listmonk sous un nom non devinable et garde
+l'adresse publique dans la photo ; puis crée la campagne (liste
+`LISTMONK_LIST`, template `LISTMONK_TEMPLATE`, sujet, `Reply-To`) ou la met à
+jour avec le corps HTML (`IssueHtmlRenderer::body()`, images = adresses
+Listmonk). `test()` et `send()` commencent par `prepare()` : le mail part
+toujours à jour. Après l'envoi réel, le numéro est figé ; les photos restent
+dans la médiathèque (archive).
+
+Le template de campagne (`listmonk/template-gazette.html`) porte toute la mise
+en page du mail et se retouche dans Listmonk ; `gazette:listmonk-setup` ne le
+crée que s'il manque.
+
 ## Dépendances
 
-- `symfony/http-client` : Immich (et Listmonk à venir).
+- `symfony/http-client` : Immich et Listmonk ; `symfony/mime` : le dépôt multipart des photos dans la médiathèque Listmonk.
 - `symfony/yaml` : lecture de la configuration du framework.
-- `ext-gd` : recompression des photos avant l'envoi (à venir).
+- `ext-gd` : recompression des photos avant l'envoi (`PhotoCompressor`).
 - Front : React, Vite, Tailwind, Testing Library, vitest. Rien d'autre.
 
-## À venir (spec v1)
-
-Envoi par Listmonk : dépôt des photos recompressées dans sa médiathèque
-(stockée sur un bucket B2 public), création de la campagne avec le corps HTML
-(`IssueHtmlRenderer::body()`, adresse des images = URL B2), envoi test puis
-réel ; passage du numéro en `teste` puis `envoye`.

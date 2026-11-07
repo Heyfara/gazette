@@ -46,6 +46,7 @@ COPY bin bin
 COPY config config
 COPY public/index.php public/index.php
 COPY src src
+COPY listmonk listmonk
 RUN composer dump-autoload --no-dev --classmap-authoritative \
     && composer dump-env prod \
     && bin/console cache:warmup \

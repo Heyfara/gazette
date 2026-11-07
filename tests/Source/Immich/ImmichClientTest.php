@@ -84,7 +84,7 @@ final class ImmichClientTest extends TestCase
         $client = $this->client();
 
         self::assertSame('Cancale', $client->asset(FakeImmich::P3)->city);
-        self::assertSame('image/webp', $client->thumbnail(FakeImmich::P1, 'preview')->contentType);
+        self::assertSame('image/jpeg', $client->thumbnail(FakeImmich::P1, 'preview')->contentType);
         parse_str((string) parse_url($this->requests[1][1], \PHP_URL_QUERY), $query);
         self::assertSame(['size' => 'preview'], $query);
         self::assertSame(15.0, (float) $this->requests[1][2]['timeout']);

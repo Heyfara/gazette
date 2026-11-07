@@ -49,10 +49,25 @@ final class FakeImmich
             '/api/assets/'.self::P2 === $path => new JsonMockResponse(self::asset(self::P2, '2026-10-15T16:00:00.000Z', 'Saint-Malo', ['Léo'])),
             '/api/assets/'.self::P3 === $path => new JsonMockResponse(self::asset(self::P3, '2026-10-16T11:00:00.000Z', 'Cancale', ['Emma'])),
             '/api/assets/'.self::UNKNOWN === $path => new MockResponse('{"message":"Not found"}', ['http_code' => 404]),
-            1 === preg_match('#^/api/assets/[0-9a-f-]+/thumbnail$#', $path) => new MockResponse('octets-photo', ['response_headers' => ['Content-Type' => 'image/webp']]),
+            1 === preg_match('#^/api/assets/[0-9a-f-]+/thumbnail$#', $path) => new MockResponse(self::jpeg(), ['response_headers' => ['Content-Type' => 'image/jpeg']]),
             1 === preg_match('#^/api/people/[0-9a-f-]+/thumbnail$#', $path) => new MockResponse('octets-visage', ['response_headers' => ['Content-Type' => 'image/jpeg']]),
             default => throw new \LogicException(\sprintf('Requête Immich non prévue par FakeImmich : %s %s', $method, $url)),
         };
+    }
+
+    /** Une vraie photo JPEG (1440 × 1080, unie), comme la preview d'Immich : la recompression doit pouvoir la lire. */
+    public static function jpeg(): string
+    {
+        static $bytes = null;
+        if (null === $bytes) {
+            $image = imagecreatetruecolor(1440, 1080);
+            imagefill($image, 0, 0, imagecolorallocate($image, 184, 85, 43));
+            ob_start();
+            imagejpeg($image, null, 80);
+            $bytes = (string) ob_get_clean();
+        }
+
+        return $bytes;
     }
 
     /**

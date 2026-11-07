@@ -3,6 +3,7 @@
 namespace App\Tests\Controller;
 
 use App\Tests\Http\FakeImmich;
+use App\Tests\Http\FakeListmonk;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
@@ -21,6 +22,7 @@ final class ApiTest extends WebTestCase
             unlink($f);
         }
         FakeImmich::$requests = [];
+        FakeListmonk::reset();
         $this->client = static::createClient();
         // Même noyau d'une requête à l'autre : le cache des miniatures (en mémoire en test) survit.
         $this->client->disableReboot();
@@ -28,9 +30,9 @@ final class ApiTest extends WebTestCase
     }
 
     /**
-     * @return array<mixed>
+     * @return array<mixed>|null null quand l'API répond « null »
      */
-    private function json(string $method, string $url, mixed $body = null, int $expectedStatus = 200, array $headers = []): array
+    private function json(string $method, string $url, mixed $body = null, int $expectedStatus = 200, array $headers = []): ?array
     {
         $server = ['HTTP_ACCEPT' => 'application/json'] + $headers;
         if (null !== $body) {
@@ -50,7 +52,7 @@ final class ApiTest extends WebTestCase
 
     public function testConfig(): void
     {
-        self::assertSame(['defaultName' => 'La gazette de test', 'maxPhotos' => 12], $this->json('GET', '/api/config'));
+        self::assertSame(['defaultName' => 'La gazette de test', 'maxPhotos' => 12, 'send' => ['configured' => true, 'list' => 'Famille', 'template' => 'Gazette', 'testEmails' => ['alice@test', 'bob@test']]], $this->json('GET', '/api/config'));
     }
 
     public function testIssueLifecycle(): void
@@ -114,11 +116,12 @@ final class ApiTest extends WebTestCase
         self::assertSame("première fois à la mer\n", $section['notes'], 'les notes gardent leurs sauts de ligne');
         self::assertSame([FakeImmich::P2, FakeImmich::P1], array_column($section['photos'], 'assetId'));
         self::assertSame([
-            'assetId' => FakeImmich::P2, 'takenAt' => '2026-10-15T16:00:00', 'city' => 'Saint-Malo', 'country' => 'France', 'people' => ['Léo'], 'caption' => 'Léo face aux vagues',
+            'assetId' => FakeImmich::P2, 'takenAt' => '2026-10-15T16:00:00', 'city' => 'Saint-Malo', 'country' => 'France', 'people' => ['Léo'], 'caption' => 'Léo face aux vagues', 'mediaUrl' => null, 'mediaId' => null,
         ], $section['photos'][0], 'métadonnées copiées d\'Immich');
         self::assertCount(2, array_filter(FakeImmich::$requests, static fn (array $r): bool => str_contains($r[1], '/api/assets/')), 'une lecture Immich par nouvelle photo');
 
         FakeImmich::$requests = [];
+        FakeListmonk::reset();
         $issue = $this->json('PATCH', "/api/issues/$id/sections/$s1", ['photos' => [['assetId' => FakeImmich::P1, 'caption' => 'Emma']]]);
         self::assertSame([['Emma']], array_map(static fn (array $p): array => [$p['caption']], $issue['sections'][0]['photos']));
         self::assertSame([], FakeImmich::$requests, 'photo déjà connue : pas de relecture');
@@ -182,8 +185,8 @@ final class ApiTest extends WebTestCase
         $this->client->request('GET', '/api/immich/assets/'.FakeImmich::P1.'/preview');
         $response = $this->client->getResponse();
         self::assertSame(200, $response->getStatusCode());
-        self::assertSame('image/webp', $response->headers->get('Content-Type'));
-        self::assertSame('octets-photo', $response->getContent());
+        self::assertSame('image/jpeg', $response->headers->get('Content-Type'));
+        self::assertSame(FakeImmich::jpeg(), $response->getContent());
 
         $this->client->request('GET', '/api/immich/assets/'.FakeImmich::P1.'/preview');
         self::assertCount(1, FakeImmich::$requests, 'deuxième lecture servie par le cache');
@@ -212,5 +215,99 @@ final class ApiTest extends WebTestCase
         self::assertSame(['error' => 'Numéro inconnu : deadbeef'], $this->json('GET', '/api/issues/deadbeef', expectedStatus: 404));
         $this->client->request('GET', '/api/nulle-part');
         self::assertSame('application/json', $this->client->getResponse()->headers->get('Content-Type'));
+    }
+
+    /**
+     * @return array{string, string} id du numéro, id de la rubrique
+     */
+    private function issueWithPhotos(): array
+    {
+        $id = $this->json('POST', '/api/issues', ['month' => '2026-11', 'title' => 'Spécial mer'], 201)['id'];
+        $s = $this->json('POST', "/api/issues/$id/sections", ['title' => 'À la mer'], 201)['sections'][0]['id'];
+        $this->json('PATCH', "/api/issues/$id/sections/$s", ['text' => 'Léo a adoré.', 'photos' => [['assetId' => FakeImmich::P1, 'caption' => 'Léo'], ['assetId' => FakeImmich::P2, 'caption' => '']]]);
+        FakeImmich::$requests = [];
+
+        return [$id, $s];
+    }
+
+    public function testPrepareUploadsPhotosOnceAndCreatesTheCampaign(): void
+    {
+        [$id, $s] = $this->issueWithPhotos();
+
+        $issue = $this->json('POST', "/api/issues/$id/prepare");
+
+        self::assertSame(40, $issue['campaignId']);
+        self::assertSame('brouillon', $issue['status']);
+        self::assertSame(['https://b2.test/gazette/photo-100.jpg', 'https://b2.test/gazette/photo-101.jpg'], array_column($issue['sections'][0]['photos'], 'mediaUrl'));
+        self::assertCount(2, array_filter(FakeImmich::$requests, static fn (array $r): bool => str_contains($r[1], '/thumbnail')), 'preview Immich lue pour chaque photo');
+        $campaign = FakeListmonk::$campaigns[40];
+        self::assertSame('Gazette n° 1 (novembre 2026)', $campaign['name']);
+        self::assertSame('La gazette de test n° 1 : Spécial mer', $campaign['subject']);
+        self::assertSame([FakeListmonk::LIST_ID], $campaign['lists']);
+        self::assertSame(FakeListmonk::TEMPLATE_ID, $campaign['template_id']);
+        self::assertSame('La gazette <gazette@test>', $campaign['from_email']);
+        self::assertSame([['Reply-To' => 'famille@test']], $campaign['headers']);
+        self::assertStringContainsString('<img src="https://b2.test/gazette/photo-100.jpg" alt="Léo"', $campaign['body']);
+        self::assertStringContainsString('Léo a adoré.', $campaign['body']);
+        self::assertMatchesRegularExpression('/filename="gazette-1-[0-9a-f]{12}\\.jpg"/', FakeListmonk::$lastUpload, 'nom de fichier non devinable');
+        self::assertStringContainsString('Content-Type: image/jpeg', FakeListmonk::$lastUpload);
+
+        // Deuxième préparation après une retouche : pas de nouveau dépôt, campagne mise à jour.
+        FakeImmich::$requests = [];
+        FakeListmonk::$requests = [];
+        $this->json('PATCH', "/api/issues/$id/sections/$s", ['text' => 'Léo a adoré, Emma aussi.']);
+        $issue = $this->json('POST', "/api/issues/$id/prepare");
+        self::assertSame(40, $issue['campaignId']);
+        self::assertSame([], FakeImmich::$requests);
+        self::assertSame(['GET', 'GET', 'PUT'], array_map(static fn (array $r): string => $r[0], FakeListmonk::$requests), 'liste, template, mise à jour');
+        self::assertStringContainsString('Emma aussi.', FakeListmonk::$campaigns[40]['body']);
+
+        $this->client->request('GET', "/api/issues/$id/mail-preview");
+        self::assertStringContainsString('Bonjour Alice,', (string) $this->client->getResponse()->getContent());
+    }
+
+    public function testTestThenSend(): void
+    {
+        [$id] = $this->issueWithPhotos();
+
+        self::assertSame('Envoyer d\'abord un test, et le relire, avant l\'envoi à la famille.', $this->json('POST', "/api/issues/$id/send", expectedStatus: 409)['error']);
+
+        $issue = $this->json('POST', "/api/issues/$id/test");
+        self::assertSame('teste', $issue['status']);
+        self::assertTrue($issue['editable'], 'on peut encore corriger après un test');
+        $test = array_values(array_filter(FakeListmonk::$requests, static fn (array $r): bool => str_ends_with($r[1], '/test')))[0];
+        self::assertSame(['alice@test', 'bob@test'], json_decode($test[2]['body'], true)['subscribers']);
+
+        $issue = $this->json('POST', "/api/issues/$id/send");
+        self::assertSame('envoye', $issue['status']);
+        self::assertFalse($issue['editable']);
+        self::assertNotNull($issue['sentAt']);
+        self::assertSame('running', FakeListmonk::$campaigns[40]['status']);
+        self::assertSame(['id' => 40, 'status' => 'running', 'toSend' => 5, 'sent' => 0], $this->json('GET', "/api/issues/$id/campaign"));
+
+        self::assertSame('Ce numéro a déjà été envoyé.', $this->json('POST', "/api/issues/$id/prepare", expectedStatus: 409)['error']);
+        $this->json('PATCH', "/api/issues/$id", ['title' => 'x'], 409);
+        $this->json('DELETE', "/api/issues/$id", expectedStatus: 409);
+    }
+
+    public function testNothingToSend(): void
+    {
+        $id = $this->json('POST', '/api/issues', [], 201)['id'];
+        self::assertSame('Le numéro n\'a aucune rubrique.', $this->json('POST', "/api/issues/$id/prepare", expectedStatus: 409)['error']);
+
+        $this->json('POST', "/api/issues/$id/sections", ['title' => 'Vide'], 201);
+        self::assertSame('La rubrique « Vide » est vide : ni texte ni photo.', $this->json('POST', "/api/issues/$id/prepare", expectedStatus: 409)['error']);
+        self::assertNull($this->json('GET', "/api/issues/$id/campaign"));
+    }
+
+    public function testMissingListIsExplained(): void
+    {
+        [$id] = $this->issueWithPhotos();
+        FakeListmonk::$noList = true;
+
+        $error = $this->json('POST', "/api/issues/$id/prepare", expectedStatus: 409)['error'];
+
+        self::assertStringContainsString('Liste Listmonk introuvable : « Famille »', $error);
+        self::assertSame([], array_filter(FakeListmonk::$requests, static fn (array $r): bool => str_ends_with($r[1], '/api/media')), 'rien déposé');
     }
 }

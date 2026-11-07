@@ -1,0 +1,32 @@
+{{/* Template de campagne « Gazette » pour Listmonk, créé par bin/console gazette:listmonk-setup.
+     Lu dans Mail iOS et Gmail Android : tableaux, styles en ligne, fond clair, pas de police web.
+     Pas de lien de désinscription ni de pixel de suivi : ils pointeraient vers un Listmonk
+     injoignable d'Internet. Se retouche ensuite dans Listmonk (Campaigns > Templates). */}}
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width">
+<meta name="color-scheme" content="light">
+<meta name="supported-color-schemes" content="light">
+<title>{{ .Campaign.Subject }}</title>
+</head>
+<body style="margin:0;padding:0;background:#f3f1ec;font-family:Georgia,'Times New Roman',serif;color:#222222">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#f3f1ec"><tr><td align="center" style="padding:16px 8px">
+<table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" style="max-width:600px;width:100%;background:#fffdf8;border:1px solid #e6e1d6">
+<tr><td style="padding:28px 32px 16px;border-bottom:2px solid #b8552b;text-align:center">
+<h1 style="margin:0;font-size:30px;font-weight:normal;color:#222222">{{ .Campaign.Subject }}</h1>
+</td></tr>
+<tr><td style="padding:24px 32px 8px;font-size:17px;line-height:1.55;color:#222222">
+Bonjour{{ if .Subscriber.FirstName }} {{ .Subscriber.FirstName }}{{ end }},
+</td></tr>
+<tr><td style="padding:0 32px 24px;color:#222222">
+{{ template "content" . }}
+</td></tr>
+<tr><td style="padding:16px 32px;border-top:1px solid #e6e1d6;font-size:13px;color:#777777;text-align:center">
+Répondez à ce mail pour nous écrire.
+</td></tr>
+</table>
+</td></tr></table>
+</body>
+</html>

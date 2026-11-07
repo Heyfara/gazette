@@ -62,6 +62,18 @@ final class IssueTest extends TestCase
         self::assertNull((new Photo('x', null, null, null, []))->place());
     }
 
+    public function testPhotoMediaIsSetEverywhereThePhotoAppears(): void
+    {
+        $issue = self::issue()->withSectionChanged('s2', static fn (Section $s): Section => $s->withPhotos([new Photo('0a3c1d6e-5b2f-4c8a-9d1e-2f3a4b5c6d71', null, null, null, [])]));
+
+        $issue = $issue->withPhotoMedia('0a3c1d6e-5b2f-4c8a-9d1e-2f3a4b5c6d71', 'https://b2.test/p.jpg', 12);
+
+        self::assertSame('https://b2.test/p.jpg', $issue->sections[0]->photos[0]->mediaUrl);
+        self::assertSame(12, $issue->sections[1]->photos[0]->mediaId);
+        self::assertSame('Léo et Emma', $issue->sections[0]->photos[0]->caption, 'le reste de la photo ne bouge pas');
+        self::assertEquals($issue, Issue::fromArray($issue->toArray()));
+    }
+
     public function testSentIssueIsNoLongerEditable(): void
     {
         $sent = self::issue()->withStatus(IssueStatus::Sent, new \DateTimeImmutable('2026-11-08'), 42);

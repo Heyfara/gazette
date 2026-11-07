@@ -18,12 +18,20 @@ final readonly class Photo
         public ?string $country,
         public array $people,
         public string $caption = '',
+        /** Adresse publique de la photo recompressée (médiathèque Listmonk sur B2), une fois déposée */
+        public ?string $mediaUrl = null,
+        public ?int $mediaId = null,
     ) {
     }
 
     public function withCaption(string $caption): self
     {
-        return new self($this->assetId, $this->takenAt, $this->city, $this->country, $this->people, $caption);
+        return new self($this->assetId, $this->takenAt, $this->city, $this->country, $this->people, $caption, $this->mediaUrl, $this->mediaId);
+    }
+
+    public function withMedia(string $url, int $id): self
+    {
+        return new self($this->assetId, $this->takenAt, $this->city, $this->country, $this->people, $this->caption, $url, $id);
     }
 
     /** Lieu lisible : « Saint-Malo (France) », « France », ou null. */
@@ -48,6 +56,8 @@ final readonly class Photo
             'country' => $this->country,
             'people' => $this->people,
             'caption' => $this->caption,
+            'mediaUrl' => $this->mediaUrl,
+            'mediaId' => $this->mediaId,
         ];
     }
 
@@ -63,6 +73,8 @@ final readonly class Photo
             isset($a['country']) ? (string) $a['country'] : null,
             array_values(array_map('strval', $a['people'] ?? [])),
             (string) ($a['caption'] ?? ''),
+            isset($a['mediaUrl']) ? (string) $a['mediaUrl'] : null,
+            isset($a['mediaId']) ? (int) $a['mediaId'] : null,
         );
     }
 }

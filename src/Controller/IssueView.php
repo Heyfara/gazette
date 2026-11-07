@@ -36,6 +36,7 @@ final class IssueView
             'photos' => \count($issue->photos()),
             'createdAt' => $issue->createdAt->format(\DateTimeInterface::ATOM),
             'sentAt' => $issue->sentAt?->format(\DateTimeInterface::ATOM),
+            'campaignId' => $issue->listmonkCampaignId,
         ];
     }
 }

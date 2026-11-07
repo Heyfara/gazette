@@ -15,6 +15,7 @@ export const issue: IssueView = {
   photos: 1,
   createdAt: '2026-11-07T20:00:00+01:00',
   sentAt: null,
+  campaignId: null,
   sections: [
     {
       id: 's1',

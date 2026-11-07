@@ -31,15 +31,33 @@ export interface IssueSummary {
   photos: number
   createdAt: string
   sentAt: string | null
+  /** Campagne Listmonk, une fois le numéro préparé */
+  campaignId: number | null
 }
 
 export interface IssueView extends Omit<IssueSummary, 'sections'> {
   sections: SectionView[]
 }
 
+export interface SendConfigView {
+  configured: boolean
+  list: string
+  template: string
+  testEmails: string[]
+}
+
 export interface ConfigView {
   defaultName: string
   maxPhotos: number
+  send: SendConfigView
+}
+
+/** État de la campagne côté Listmonk (null tant que le numéro n'est pas préparé). */
+export interface CampaignState {
+  id: number
+  status: string
+  toSend: number
+  sent: number
 }
 
 export interface AlbumView {

@@ -74,6 +74,18 @@ final readonly class Issue
         return $this->copy(sections: array_values(array_map(static fn (string $id): Section => $byId[$id], $ids)));
     }
 
+    /** La même photo peut être dans plusieurs rubriques : toutes reçoivent l'adresse. */
+    public function withPhotoMedia(string $assetId, string $url, int $mediaId): self
+    {
+        return $this->copy(sections: array_values(array_map(
+            static fn (Section $s): Section => $s->withPhotos(array_map(
+                static fn (Photo $p): Photo => $p->assetId === $assetId ? $p->withMedia($url, $mediaId) : $p,
+                $s->photos,
+            )),
+            $this->sections,
+        )));
+    }
+
     public function withStatus(IssueStatus $status, ?\DateTimeImmutable $sentAt = null, ?int $campaignId = null): self
     {
         return $this->copy(status: $status, sentAt: $sentAt ?? $this->sentAt, listmonkCampaignId: $campaignId ?? $this->listmonkCampaignId);

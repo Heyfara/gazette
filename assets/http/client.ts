@@ -1,4 +1,4 @@
-import type { AlbumView, ConfigView, IssueSummary, IssueView, PersonView, PhotoInput, SearchPage } from './types'
+import type { AlbumView, CampaignState, ConfigView, IssueSummary, IssueView, PersonView, PhotoInput, SearchPage } from './types'
 
 /** Erreur renvoyée par l'API ({ error, details? }) ou réponse inattendue. */
 export class ApiError extends Error {
@@ -57,6 +57,17 @@ export const fetchPrompt = (id: string, sectionId: string) => getJson<{ prompt: 
 
 /** Adresse de l'aperçu du numéro (page HTML complète), à mettre dans une iframe. */
 export const previewUrl = (id: string, version: number) => `${issueUrl(id)}/preview?v=${version}`
+/** Le mail rendu par Listmonk (template compris) ; prépare le numéro au passage. */
+export const mailPreviewUrl = (id: string, version: number) => `${issueUrl(id)}/mail-preview?v=${version}`
+
+const post = (url: string) => getJson<IssueView>(url, undefined, { method: 'POST', headers: { Accept: 'application/json' } })
+/** Dépose les photos et crée ou met à jour la campagne Listmonk. */
+export const prepareIssue = (id: string) => post(`${issueUrl(id)}/prepare`)
+/** Envoi de test aux adresses configurées ; le numéro passe en « testé ». */
+export const testIssue = (id: string) => post(`${issueUrl(id)}/test`)
+/** Envoi à la famille ; le numéro passe en « envoyé » et se fige. */
+export const sendIssue = (id: string) => post(`${issueUrl(id)}/send`)
+export const fetchCampaignState = (id: string, signal?: AbortSignal) => getJson<CampaignState | null>(`${issueUrl(id)}/campaign`, signal)
 
 export const fetchAlbums = (signal?: AbortSignal) => getJson<AlbumView[]>('/api/immich/albums', signal)
 export const fetchPeople = (signal?: AbortSignal) => getJson<PersonView[]>('/api/immich/people', signal)

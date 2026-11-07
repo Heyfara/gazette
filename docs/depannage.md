@@ -29,6 +29,20 @@ L'indicateur « Non enregistré : … » à côté de la rubrique donne la raiso
 Immich injoignable à l'ajout d'une photo). Les champs texte s'enregistrent
 0,8 s après la dernière frappe ; fermer l'onglet avant perd la frappe en cours.
 
+## « Listmonk a refusé (400) : no subscribers found » à l'envoi de test
+
+Les adresses de `GAZETTE_TEST_EMAILS` doivent être des abonnés de Listmonk
+(n'importe quelle liste). Les ajouter dans *Subscribers*.
+
+## Les photos du mail ne s'affichent pas chez les destinataires
+
+Regarder l'adresse d'une image dans le mail reçu : si elle commence par celle
+de Listmonk (`…/uploads/…`), la médiathèque est encore sur le disque du
+serveur, injoignable d'Internet. Passer *Settings → Media uploads* sur le
+stockage S3 public, puis re-préparer le numéro : seules les photos sans
+adresse sont déposées, donc retirer et remettre celles déjà déposées, ou
+repartir d'un numéro dupliqué.
+
 ## Le prompt n'inclut pas les dernières notes
 
 Le bouton attend la fin de l'enregistrement (grisé pendant « Modifié » et

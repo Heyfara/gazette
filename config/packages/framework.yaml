@@ -11,6 +11,6 @@ framework:
 when@test:
     framework:
         test: true
-        # Aucun appel réseau en test : tests/Http/FakeImmich répond à la place.
+        # Aucun appel réseau en test : tests/Http/FakeServices répond à la place.
         http_client:
-            mock_response_factory: App\Tests\Http\FakeImmich
+            mock_response_factory: App\Tests\Http\FakeServices

@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useState } from 'react'
 import { SectionEditor } from '../editor/SectionEditor'
 import { IssueHeader } from '../editor/IssueHeader'
-import { PreviewPane } from '../editor/PreviewPane'
+import { PreviewPane, type PreviewMode } from '../editor/PreviewPane'
+import { SendPanel } from '../editor/SendPanel'
 import { useJson } from '../hooks/useJson'
 import { addSection, deleteIssue, deleteSection, fetchConfig, fetchIssue, reorderSections } from '../http/client'
 import type { IssueView } from '../http/types'
@@ -18,7 +19,7 @@ export function IssueEditorPage({ id, onBack }: { id: string; onBack: () => void
   const [issue, setIssue] = useState<IssueView | null>(null)
   const [actionError, setActionError] = useState<Error | null>(null)
   const [version, setVersion] = useState(0)
-  const [showPreview, setShowPreview] = useState(false)
+  const [preview, setPreview] = useState<PreviewMode | null>(null)
 
   useEffect(() => {
     if (loaded.data) setIssue(loaded.data)
@@ -76,15 +77,15 @@ export function IssueEditorPage({ id, onBack }: { id: string; onBack: () => void
   const maxPhotos = config.data?.maxPhotos ?? 12
 
   return (
-    <div className={`mx-auto flex gap-6 px-4 py-6 ${showPreview ? 'max-w-7xl' : 'max-w-3xl'}`}>
+    <div className={`mx-auto flex gap-6 px-4 py-6 ${preview ? 'max-w-7xl' : 'max-w-3xl'}`}>
       <main className="flex min-w-0 flex-1 flex-col gap-6">
         <nav className="flex flex-wrap items-center justify-between gap-2">
           <button type="button" className={button.ghost} onClick={onBack}>
             ← Les numéros
           </button>
           <div className="flex gap-2">
-            <button type="button" className={button.secondary} onClick={() => setShowPreview((v) => !v)} aria-pressed={showPreview}>
-              {showPreview ? 'Masquer l’aperçu' : 'Aperçu'}
+            <button type="button" className={button.secondary} onClick={() => setPreview((v) => (v ? null : 'local'))} aria-pressed={preview !== null}>
+              {preview ? 'Masquer l’aperçu' : 'Aperçu'}
             </button>
             {issue.editable && (
               <button type="button" className={button.danger} onClick={remove}>
@@ -127,11 +128,21 @@ export function IssueEditorPage({ id, onBack }: { id: string; onBack: () => void
             + Ajouter une rubrique
           </button>
         )}
+
+        <SendPanel
+          issue={issue}
+          config={config.data?.send ?? null}
+          onIssue={update}
+          onPreview={() => {
+            setVersion((v) => v + 1)
+            setPreview('listmonk')
+          }}
+        />
       </main>
 
-      {showPreview && (
+      {preview && (
         <aside className="hidden w-[640px] shrink-0 lg:block">
-          <PreviewPane issueId={id} version={version} />
+          <PreviewPane issueId={id} version={version} mode={preview} />
         </aside>
       )}
     </div>

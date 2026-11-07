@@ -4,13 +4,17 @@ import { App } from './App'
 import { issue, mockFetch } from './test-fixtures'
 
 const summary = { ...issue, sections: 2 }
+const config = { defaultName: 'x', maxPhotos: 12, send: { configured: true, list: 'Famille', template: 'Gazette', testEmails: ['alice@test'] } }
+
+// Le panneau d'envoi lit l'état de la campagne.
+const campaign = { '/api/issues/ab12cd34/campaign': null, '/api/issues/ff00ff00/campaign': null }
 
 describe('App', () => {
   beforeEach(() => window.history.replaceState(null, '', '/'))
   afterEach(() => vi.unstubAllGlobals())
 
   it('liste les numéros et ouvre celui qu’on choisit', async () => {
-    vi.stubGlobal('fetch', mockFetch({ '/api/issues': [summary], '/api/issues/ab12cd34': issue, '/api/config': { defaultName: 'x', maxPhotos: 12 } }).fetchMock)
+    vi.stubGlobal('fetch', mockFetch({ '/api/issues': [summary], '/api/issues/ab12cd34': issue, '/api/config': config, ...campaign }).fetchMock)
     render(<App />)
 
     const row = await screen.findByRole('button', { name: /Spécial mer/ })
@@ -25,7 +29,7 @@ describe('App', () => {
   })
 
   it('crée un numéro du mois courant et l’ouvre', async () => {
-    const { fetchMock, calls } = mockFetch({ '/api/issues': [], 'POST /api/issues': { ...issue, id: 'ff00ff00' }, '/api/issues/ff00ff00': issue, '/api/config': { defaultName: 'x', maxPhotos: 12 } })
+    const { fetchMock, calls } = mockFetch({ '/api/issues': [], 'POST /api/issues': { ...issue, id: 'ff00ff00' }, '/api/issues/ff00ff00': issue, '/api/config': config, ...campaign })
     vi.stubGlobal('fetch', fetchMock)
     render(<App />)
 

@@ -27,7 +27,29 @@ GAZETTE_FAMILY="Alice (la maman), Bob (le papa), Léo et Emma (les enfants)"
 IMMICH_URL=https://immich.example
 IMMICH_API_KEY=…
 TLS_CA_FILE=/certs/mkcert-rootCA.pem
+
+# Envoi (facultatif en dev : sans ces lignes, le panneau « Envoi » le dit et le reste marche)
+LISTMONK_URL=http://10.0.0.2:9000      # l'API Listmonk, publiée sur le LAN
+LISTMONK_API_USER=gazette
+LISTMONK_API_TOKEN=…
+GAZETTE_FROM="La gazette <gazette@exemple.fr>"   # expéditeur validé côté SMTP ; vide = celui de Listmonk
+GAZETTE_REPLY_TO=famille@exemple.fr
+GAZETTE_TEST_EMAILS=moi@exemple.fr               # abonnés connus de Listmonk
 ```
+
+### 2 bis. Côté Listmonk
+
+1. **Utilisateur d'API** `gazette` (*Users → New → API user*), avec un rôle
+   limité à : `campaigns:get`, `campaigns:manage`, `media:get`, `media:manage`,
+   `lists:get`, `lists:manage`, `templates:get`, `templates:manage`,
+   `subscribers:get`. Le jeton va dans `LISTMONK_API_TOKEN`.
+2. **Médiathèque sur un stockage public** (*Settings → Media uploads*,
+   fournisseur S3, bucket public) : sinon les photos des mails pointent vers
+   un Listmonk que les destinataires ne joignent pas.
+3. `docker compose run --rm gazette bin/console gazette:listmonk-setup` crée la
+   liste `LISTMONK_LIST` et le template `LISTMONK_TEMPLATE`
+   (`listmonk/template-gazette.html`) s'ils manquent. Ajouter ensuite les
+   destinataires à la liste, prénom compris, dont les adresses de test.
 
 `compose.yaml` monte la CA mkcert du poste (`~/.local/share/mkcert/rootCA.pem`,
 ou `$MKCERT_CAROOT/rootCA.pem`) sur `/certs/mkcert-rootCA.pem`. Sans ce
