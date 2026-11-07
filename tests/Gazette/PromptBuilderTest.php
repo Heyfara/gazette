@@ -11,12 +11,18 @@ final class PromptBuilderTest extends TestCase
     private function builder(string $template = ''): PromptBuilder
     {
         if ('' === $template) {
-            return new PromptBuilder('', \dirname(__DIR__, 2));
+            return new PromptBuilder('', \dirname(__DIR__, 2), 'Alice (la maman), Bob (le papa), Léo et Emma (les enfants)');
         }
+
+        return new PromptBuilder($this->file($template), '/nulle-part', 'Alice et Bob');
+    }
+
+    private function file(string $template): string
+    {
         $file = tempnam(sys_get_temp_dir(), 'prompt');
         file_put_contents($file, $template);
 
-        return new PromptBuilder($file, '/nulle-part');
+        return $file;
     }
 
     public function testFillsTheDefaultTemplate(): void
@@ -25,11 +31,13 @@ final class PromptBuilderTest extends TestCase
 
         $prompt = $this->builder()->build($issue, $issue->sections[0]);
 
-        self::assertStringContainsString('« La gazette », la gazette familiale mensuelle, numéro 4 (novembre 2026)', $prompt);
-        self::assertStringContainsString("Rubrique : À la mer\n", $prompt);
+        self::assertStringContainsString('« La gazette », la petite gazette', $prompt);
+        self::assertStringContainsString('Numéro 4, novembre 2026.', $prompt);
+        self::assertStringContainsString('La famille : Alice (la maman), Bob (le papa), Léo et Emma (les enfants).', $prompt);
+        self::assertStringContainsString('rubrique « À la mer »', $prompt);
         self::assertStringContainsString("1. 15/10/2026, Saint-Malo (France), personnes : Léo, Emma, légende : Léo et Emma\n", $prompt);
-        self::assertStringContainsString("Notes de l'auteur : notes\n", $prompt);
-        self::assertStringContainsString('continuité du style : (aucune)', $prompt, 'première rubrique : pas de précédente');
+        self::assertStringContainsString("(notes de l'auteur) : notes\n", $prompt);
+        self::assertStringContainsString('garder le même ton : (aucune)', $prompt, 'première rubrique : pas de précédente');
         self::assertStringEndsWith("Réponds uniquement avec le paragraphe.\n", $prompt);
         self::assertStringNotContainsString('{{', $prompt);
     }
@@ -48,6 +56,13 @@ final class PromptBuilderTest extends TestCase
         $issue = IssueTest::issue()->withSectionChanged('s2', static fn (Section $s): Section => $s->withPhotos([new \App\Gazette\Model\Photo('x', null, null, null, [])]));
 
         self::assertSame("1. sans information\n", $this->builder('{{photos}}')->build($issue, $issue->sections[1]));
+    }
+
+    public function testFamilyIsOptional(): void
+    {
+        $issue = IssueTest::issue();
+
+        self::assertSame("(non précisée)\n", (new PromptBuilder($this->file('{{famille}}'), '/x'))->build($issue, $issue->sections[0]));
     }
 
     public function testMonthInFrench(): void

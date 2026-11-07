@@ -13,7 +13,7 @@ src/
     IssueRepository   un fichier JSON par numéro, modifications sous verrou (change())
     SectionPhotos     la liste de photos envoyée par le front → Photo[] (métadonnées lues dans Immich une fois)
     Payload           lecture et vérification d'un corps JSON → 422 avec la liste des refus
-    Prompt/           PromptBuilder : config/prompt.txt rempli avec le numéro, la rubrique, les photos, les notes
+    Prompt/           PromptBuilder : config/prompt.txt rempli avec le numéro, la famille (GAZETTE_FAMILY), la rubrique, les photos, les notes
     Html/             IssueHtmlRenderer : corps HTML du numéro (tableaux, styles en ligne) et page d'aperçu
   Source/Immich/      ImmichClient (API 3.x) et ses objets : albums, recherche (curseur), personnes, miniatures
   Controller/         un contrôleur par ressource, IssueView = ce que lit le front

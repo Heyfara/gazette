@@ -23,6 +23,7 @@ dans le sélecteur) et les prénoms dans le prompt.
 
 ```dotenv
 GAZETTE_NAME="La gazette de la famille Exemple"
+GAZETTE_FAMILY="Alice (la maman), Bob (le papa), Léo et Emma (les enfants)"
 IMMICH_URL=https://immich.example
 IMMICH_API_KEY=…
 TLS_CA_FILE=/certs/mkcert-rootCA.pem
@@ -56,5 +57,5 @@ Les numéros créés en dev vont dans `var/data/` (ignoré par git). Les tests
 utilisent `var/test-data/`, vidé à chaque test, et l'Immich fictif de
 `tests/Http/FakeImmich.php` : ils ne sortent jamais sur le réseau.
 
-Le prompt se règle dans `config/prompt.txt` (ou le fichier donné par
+Le prompt se règle dans `config/prompt.txt` (les prénoms viennent de `GAZETTE_FAMILY`, jamais du gabarit) (ou le fichier donné par
 `GAZETTE_PROMPT_FILE`), relu à chaque clic : pas besoin de redémarrer.

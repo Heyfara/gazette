@@ -11,7 +11,8 @@ use Symfony\Component\DependencyInjection\Attribute\Autowire;
  * Le prompt « à coller » d'une rubrique : un gabarit texte (config/prompt.txt,
  * ou GAZETTE_PROMPT_FILE) rempli avec ce que l'appli sait déjà. Aucune IA ici.
  *
- * Variables : {{nom}}, {{numero}}, {{mois}}, {{rubrique}}, {{photos}}, {{notes}}, {{precedent}}.
+ * Variables : {{nom}}, {{numero}}, {{mois}}, {{famille}}, {{rubrique}}, {{photos}}, {{notes}}, {{precedent}}.
+ * {{famille}} vient de GAZETTE_FAMILY (prénoms et rôles), jamais du dépôt : l'image est publique.
  */
 final readonly class PromptBuilder
 {
@@ -24,6 +25,8 @@ final readonly class PromptBuilder
         string $file,
         #[Autowire('%kernel.project_dir%')]
         string $projectDir,
+        #[Autowire('%env(GAZETTE_FAMILY)%')]
+        private string $family = '',
     ) {
         $this->file = '' === $file ? $projectDir.'/config/prompt.txt' : $file;
     }
@@ -46,6 +49,7 @@ final readonly class PromptBuilder
             '{{nom}}' => $issue->name,
             '{{numero}}' => (string) $issue->number,
             '{{mois}}' => self::month($issue->month),
+            '{{famille}}' => '' === trim($this->family) ? '(non précisée)' : trim($this->family),
             '{{rubrique}}' => '' === $section->title ? '(sans titre)' : $section->title,
             '{{photos}}' => [] === $section->photos ? '(aucune)' : implode("\n", array_map(self::photoLine(...), array_keys($section->photos), $section->photos)),
             '{{notes}}' => '' === trim($section->notes) ? '(aucune)' : trim($section->notes),

@@ -125,7 +125,8 @@ final class ApiTest extends WebTestCase
 
         $prompt = $this->json('GET', "/api/issues/$id/sections/$s1/prompt")['prompt'];
         self::assertStringContainsString('1. 15/10/2026, Saint-Malo (France), personnes : Léo, Emma, légende : Emma', $prompt);
-        self::assertStringContainsString('Notes de l\'auteur : première fois à la mer', $prompt);
+        self::assertStringContainsString('(notes de l\'auteur) : première fois à la mer', $prompt);
+        self::assertStringContainsString('La famille : Alice (la maman)', $prompt);
 
         $issue = $this->json('PUT', "/api/issues/$id/sections-order", ['order' => [$s2, $s1]]);
         self::assertSame([$s2, $s1], array_column($issue['sections'], 'id'));
