@@ -32,7 +32,7 @@ final class ImmichController
         return new JsonResponse(array_map(static fn (ImmichPerson $p): array => $p->toArray(), $immich->people()));
     }
 
-    /** ?album=<id> ou ?from=AAAA-MM-JJ&to=AAAA-MM-JJ, plus ?person=<id> et ?page=<n>. */
+    /** ?album=<id> ou ?from=AAAA-MM-JJ&to=AAAA-MM-JJ, plus ?person=<id> ; la page suivante avec ?cursor=<nextCursor>. */
     #[Route('/api/immich/search', methods: ['GET'])]
     public function search(Request $request, ImmichClient $immich): JsonResponse
     {
@@ -43,9 +43,12 @@ final class ImmichController
         if (null === $album && null === $from && null === $to) {
             throw new BadRequestHttpException('Préciser un album (album=) ou une période (from=, to=).');
         }
-        $page = max(1, $request->query->getInt('page', 1));
+        $cursor = $request->query->getString('cursor');
+        if ('' !== $cursor && !preg_match('/^[A-Za-z0-9_=-]{1,200}$/', $cursor)) {
+            throw new BadRequestHttpException('« cursor » invalide.');
+        }
 
-        return new JsonResponse($immich->search(new ImmichSearch($album, $from, $to, $person, $page))->toArray());
+        return new JsonResponse($immich->search(new ImmichSearch($album, $from, $to, $person, '' === $cursor ? null : $cursor))->toArray());
     }
 
     #[Route('/api/immich/assets/{assetId}/{size}', requirements: ['size' => 'thumbnail|preview'], methods: ['GET'])]

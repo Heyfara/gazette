@@ -10,8 +10,9 @@ final readonly class ImmichPage
      */
     public function __construct(
         public array $assets,
-        public int $total,
-        public ?int $nextPage,
+        /** Nombre de photos de cette page (Immich ne donne pas le total de la recherche) */
+        public int $count,
+        public ?string $nextCursor,
     ) {
     }
 
@@ -22,8 +23,8 @@ final readonly class ImmichPage
     {
         return [
             'assets' => array_map(static fn (ImmichAsset $a): array => $a->toArray(), $this->assets),
-            'total' => $this->total,
-            'nextPage' => $this->nextPage,
+            'count' => $this->count,
+            'nextCursor' => $this->nextCursor,
         ];
     }
 }

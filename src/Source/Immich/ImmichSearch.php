@@ -10,7 +10,8 @@ final readonly class ImmichSearch
         public ?\DateTimeImmutable $from = null,
         public ?\DateTimeImmutable $to = null,
         public ?string $personId = null,
-        public int $page = 1,
+        /** Curseur de la page suivante, renvoyé par Immich (ImmichPage::$nextCursor) */
+        public ?string $cursor = null,
         public int $size = 60,
     ) {
     }

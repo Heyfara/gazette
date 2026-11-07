@@ -40,17 +40,18 @@ final class ImmichClientTest extends TestCase
 
     public function testSearchByAlbumPeriodAndPerson(): void
     {
-        $page = $this->client()->search(new ImmichSearch(FakeImmich::ALBUM, new \DateTimeImmutable('2026-10-01'), new \DateTimeImmutable('2026-10-31'), FakeImmich::PERSON, page: 2));
+        $page = $this->client()->search(new ImmichSearch(FakeImmich::ALBUM, new \DateTimeImmutable('2026-10-01'), new \DateTimeImmutable('2026-10-31'), FakeImmich::PERSON, cursor: 'eyJvZmZzZXQiOjJ9'));
 
-        self::assertSame(3, $page->total);
-        self::assertNull($page->nextPage);
+        self::assertSame(3, $page->count);
+        self::assertSame('eyJvZmZzZXQiOjN9', $page->nextCursor);
         self::assertEquals(new ImmichAsset(FakeImmich::P1, new \DateTimeImmutable('2026-10-15T14:30:00'), 'Saint-Malo', 'France', ['Léo', 'Emma']), $page->assets[0]);
         self::assertSame(['Emma'], $page->assets[2]->people, 'les visages sans nom sont ignorés');
 
         [$method, , $options] = $this->requests[0];
         self::assertSame('POST', $method);
         $body = json_decode($options['body'], true);
-        self::assertSame(2, $body['page']);
+        self::assertSame('eyJvZmZzZXQiOjJ9', $body['cursor']);
+        self::assertArrayNotHasKey('page', $body, 'champ obsolète, refusé par Immich 3 avec filter');
         self::assertTrue($body['withExif']);
         self::assertSame([
             'visibility' => ['eq' => 'timeline'],
@@ -65,7 +66,9 @@ final class ImmichClientTest extends TestCase
     {
         $this->client()->search(new ImmichSearch(from: new \DateTimeImmutable('2026-10-01')));
 
-        $filter = json_decode($this->requests[0][2]['body'], true)['filter'];
+        $body = json_decode($this->requests[0][2]['body'], true);
+        self::assertArrayNotHasKey('cursor', $body);
+        $filter = $body['filter'];
         self::assertSame(['gte' => '2026-10-01T00:00:00+00:00'], $filter['takenAt']);
         self::assertArrayNotHasKey('albumIds', $filter);
         self::assertArrayNotHasKey('personIds', $filter);

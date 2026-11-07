@@ -40,7 +40,7 @@ final class FakeImmich
                 ['id' => self::UNKNOWN, 'name' => '', 'isHidden' => false],
                 ['id' => '9c8b7a6f-5e4d-4c3b-a291-807f6e5d4c3c', 'name' => 'Emma', 'isHidden' => false],
             ]]),
-            '/api/search/metadata' === $path => new JsonMockResponse(['albums' => ['items' => []], 'assets' => ['total' => 3, 'count' => 3, 'nextPage' => null, 'items' => [
+            '/api/search/metadata' === $path => new JsonMockResponse(['albums' => ['items' => []], 'assets' => ['total' => 3, 'count' => 3, 'nextPage' => null, 'nextCursor' => 'eyJvZmZzZXQiOjN9', 'items' => [
                 self::asset(self::P1, '2026-10-15T14:30:00.000Z', 'Saint-Malo', ['Léo', 'Emma']),
                 self::asset(self::P2, '2026-10-15T16:00:00.000Z', 'Saint-Malo', ['Léo']),
                 self::asset(self::P3, '2026-10-16T11:00:00.000Z', 'Cancale', ['Emma', '']),

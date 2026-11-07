@@ -165,10 +165,12 @@ final class ApiTest extends WebTestCase
         self::assertSame(['Emma', 'Léo'], array_column($this->json('GET', '/api/immich/people'), 'name'));
 
         $page = $this->json('GET', '/api/immich/search?album='.FakeImmich::ALBUM.'&person='.FakeImmich::PERSON);
-        self::assertSame(3, $page['total']);
+        self::assertSame(3, $page['count']);
+        self::assertSame('eyJvZmZzZXQiOjN9', $page['nextCursor']);
         self::assertSame(['Léo', 'Emma'], $page['assets'][0]['people']);
 
-        $this->json('GET', '/api/immich/search?from=2026-10-01&to=2026-10-31&page=2');
+        $this->json('GET', '/api/immich/search?from=2026-10-01&to=2026-10-31&cursor=eyJvZmZzZXQiOjN9');
+        $this->json('GET', '/api/immich/search?from=2026-10-01&cursor=pas%20valide', expectedStatus: 400);
         $this->json('GET', '/api/immich/search', expectedStatus: 400);
         self::assertSame('« from » doit être une date AAAA-MM-JJ.', $this->json('GET', '/api/immich/search?from=2026-13-01', expectedStatus: 400)['error']);
         $this->json('GET', '/api/immich/search?album=x', expectedStatus: 400);

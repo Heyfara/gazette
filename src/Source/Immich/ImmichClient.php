@@ -54,7 +54,7 @@ final readonly class ImmichClient
         return $albums;
     }
 
-    /** Photos (pas les vidéos) de la frise, les plus récentes d'abord. */
+    /** Photos (pas les vidéos) de la frise, les plus récentes d'abord ; la page suivante par son curseur. */
     public function search(ImmichSearch $search): ImmichPage
     {
         $filter = ['visibility' => ['eq' => 'timeline'], 'type' => ['eq' => 'IMAGE']];
@@ -71,20 +71,20 @@ final readonly class ImmichClient
             $filter['personIds'] = ['all' => [$search->personId]];
         }
 
-        $page = $this->json('POST', '/api/search/metadata', ['json' => [
+        $page = $this->json('POST', '/api/search/metadata', ['json' => array_filter([
             'size' => $search->size,
-            'page' => $search->page,
+            'cursor' => $search->cursor,
             'orderBy' => ['field' => 'fileCreatedAt', 'direction' => 'desc'],
             'filter' => $filter,
             'withExif' => true,
             'withPeople' => true,
-        ]]);
+        ], static fn ($v): bool => null !== $v)]);
         $assets = $page['assets'] ?? [];
 
         return new ImmichPage(
             array_map(self::toAsset(...), array_values($assets['items'] ?? [])),
-            (int) ($assets['total'] ?? 0),
-            isset($assets['nextPage']) ? (int) $assets['nextPage'] : null,
+            (int) ($assets['count'] ?? 0),
+            isset($assets['nextCursor']) && '' !== $assets['nextCursor'] ? (string) $assets['nextCursor'] : null,
         );
     }
 
