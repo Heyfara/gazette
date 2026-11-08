@@ -100,6 +100,36 @@ Le template de campagne (`listmonk/template-gazette.html`) porte toute la mise
 en page du mail et se retouche dans Listmonk ; `gazette:listmonk-setup` ne le
 crée que s'il manque.
 
+Parcours dans le panneau « Envoi » (`assets/editor/SendPanel.tsx`) et
+statuts (`IssueStatus`) :
+
+1. **Préparer l'envoi** / **Mettre à jour la campagne** → `prepare` ; à refaire
+   après toute modification (le test et l'envoi le refont d'eux-mêmes).
+2. **Envoyer un test** → `test` ; statut `brouillon` → `teste`. Une
+   modification ultérieure ne repasse **pas** le numéro en `brouillon`
+   (choix v1 : l'envoi refait la préparation, le mail part donc à jour, mais
+   sans nouveau test).
+3. **Envoyer à la famille** (grisé sans test, confirmation) → `send` ;
+   statut `envoye`, `sentAt`, numéro figé (409 sur toute écriture).
+
+Seules les photos sans `mediaUrl` sont déposées : changer de médiathèque
+(disque → S3) ne redéplace pas celles déjà déposées (voir `docs/depannage.md`).
+
+## Configuration
+
+| Variable | Rôle | Défaut |
+|---|---|---|
+| `GAZETTE_NAME` | nom par défaut des numéros | — |
+| `GAZETTE_FAMILY` | phrase présentant la famille, injectée dans le prompt | — |
+| `GAZETTE_DATA_DIR` | dossier des numéros | `var/data` |
+| `GAZETTE_PROMPT_FILE` | gabarit du prompt | `config/prompt.txt` |
+| `IMMICH_URL`, `IMMICH_API_KEY`, `TLS_CA_FILE` | Immich (lecture seule) | — |
+| `LISTMONK_URL`, `LISTMONK_API_USER`, `LISTMONK_API_TOKEN` | API Listmonk ; vides = envoi désactivé, le reste marche | — |
+| `LISTMONK_LIST`, `LISTMONK_TEMPLATE` | noms de la liste et du template | `Famille`, `Gazette` |
+| `GAZETTE_FROM` | expéditeur `Nom <adresse>` sur un domaine authentifié dans Brevo ; vide = celui de Listmonk | — |
+| `GAZETTE_REPLY_TO` | adresse qui reçoit les réponses | — |
+| `GAZETTE_TEST_EMAILS` | adresses de test (abonnés Listmonk), séparées par des virgules | — |
+
 ## Dépendances
 
 - `symfony/http-client` : Immich et Listmonk ; `symfony/mime` : le dépôt multipart des photos dans la médiathèque Listmonk.

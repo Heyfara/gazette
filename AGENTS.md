@@ -1,9 +1,11 @@
 # AGENTS.md
 
 Gazette familiale par e-mail : API Symfony 8 (PHP 8.5, PHP-FPM) + front
-React/Vite/Tailwind v4 dans `assets/`. Conception et décisions : page
-« Gazette familiale (spécification v1) » du wiki du homelab ; lire
-`docs/architecture.md` avant toute modification de structure.
+React/Vite/Tailwind v4 dans `assets/`. Commencer par `docs/etat.md` (où on en
+est, ce qui reste, ce qui a été écarté), puis `docs/architecture.md` avant
+toute modification de structure. Conception et valeurs réelles (noms,
+domaine, bucket) : page « Gazette familiale (spécification v1) » du wiki du
+homelab, jamais ici.
 
 ## Règles du projet
 
@@ -23,7 +25,9 @@ React/Vite/Tailwind v4 dans `assets/`. Conception et décisions : page
 - **Textes en français** (messages d'erreur, interface, commentaires, docs).
 - **Tenir la doc à jour** dans la même PR : `docs/architecture.md` pour tout
   changement de structure ou d'API, `docs/depannage.md` pour toute panne dont
-  la cause n'était pas évidente.
+  la cause n'était pas évidente, `docs/etat.md` à chaque étape franchie
+  (avec la date). La page wiki de spécification suit aussi, via le skill
+  `bookstack-doc` quand il est disponible.
 
 ## Commandes
 
@@ -38,6 +42,21 @@ make test-front ARGS="editor/PhotoPicker"
 make lint
 docker compose run --rm gazette bin/console debug:router
 ```
+
+## Tester l'API à la main
+
+Les écritures exigent un en-tête de même origine, sinon 403 :
+
+```bash
+curl -s -X POST -H 'Sec-Fetch-Site: same-origin' http://localhost:8090/api/issues/<id>/prepare
+```
+
+Une réponse HTML au lieu de JSON = erreur fatale PHP avant Symfony (souvent
+`.env.local` mal formé, voir `docs/depannage.md`). Pour interroger Listmonk
+directement, lire le jeton depuis `.env.local` dans une variable sans jamais
+l'afficher (`Authorization: token <user>:<jeton>`). En zsh, une variable non
+quotée n'est pas découpée en mots : passer chaque argument de `curl`
+explicitement, pas via une chaîne.
 
 ## Conventions
 

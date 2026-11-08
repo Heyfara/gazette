@@ -8,7 +8,8 @@ via Listmonk.
 - **Back** : Symfony 8 en API JSON seule, PHP-FPM. Les numéros sont des
   fichiers JSON (`GAZETTE_DATA_DIR`), pas de base de données.
 - **Front** : React + Vite + Tailwind v4, dans `assets/`.
-- **Sources** : Immich (photos, albums, personnes), Listmonk (envoi, à venir).
+- **Sources** : Immich (photos, albums, personnes), Listmonk (campagne et
+  envoi, médiathèque sur un bucket S3 public), Brevo derrière Listmonk (SMTP).
 - **Prod** : image `ghcr.io/heyfara/homelab-gazette`, derrière le nginx
   partagé du serveur, lui-même derrière Caddy (rôle Ansible `service-gazette`).
 
@@ -28,9 +29,10 @@ voir [docs/developpement.md](docs/developpement.md).
 
 | Document | Pour |
 |---|---|
-| [docs/developpement.md](docs/developpement.md) | mettre en route l'environnement de dev |
+| [docs/etat.md](docs/etat.md) | où en est le projet, ce qui reste à faire |
+| [docs/developpement.md](docs/developpement.md) | mettre en route l'environnement de dev, préparer Listmonk, B2 et l'expéditeur |
 | [docs/architecture.md](docs/architecture.md) | comprendre le découpage, l'API, les choix |
-| [docs/depannage.md](docs/depannage.md) | une photo qui ne s'affiche pas, Immich qui refuse la clé |
+| [docs/depannage.md](docs/depannage.md) | photo absente, clé refusée, jeton Listmonk, `.env.local` cassé |
 | [AGENTS.md](AGENTS.md) | règles du projet pour les agents IA (et les humains) |
 
 La conception (périmètre, flux d'envoi, Listmonk et Backblaze B2) est dans le

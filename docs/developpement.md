@@ -45,13 +45,45 @@ GAZETTE_TEST_EMAILS=moi@exemple.fr               # abonnés connus de Listmonk
    `campaigns:manage_all`, `campaigns:send`. Ajouter `lists:manage_all`
    seulement si la commande de l'étape 3 doit créer la liste. Le jeton va dans
    `LISTMONK_API_TOKEN` (il n'est affiché qu'une fois).
-2. **Médiathèque sur un stockage public** (*Settings → Media uploads*,
-   fournisseur S3, bucket public) : sinon les photos des mails pointent vers
-   un Listmonk que les destinataires ne joignent pas.
-3. `docker compose run --rm gazette bin/console gazette:listmonk-setup` crée la
-   liste `LISTMONK_LIST` et le template `LISTMONK_TEMPLATE`
-   (`listmonk/template-gazette.html`) s'ils manquent. Ajouter ensuite les
-   destinataires à la liste, prénom compris, dont les adresses de test.
+2. **Médiathèque sur un stockage public** (*Settings → Media uploads*) :
+   sinon les photos des mails pointent vers un Listmonk que les destinataires
+   ne joignent pas. Avec un bucket Backblaze B2 **public** dédié (clé
+   d'application limitée à ce bucket, lecture et écriture ; le chiffrement
+   côté serveur imposé par B2 ne gêne pas l'accès public) :
+
+   | Champ Listmonk | Valeur |
+   |---|---|
+   | Provider | S3 |
+   | AWS access key / secret | keyID / applicationKey de la clé B2 |
+   | Region | la région de l'endpoint, ex. `eu-central-003` |
+   | Bucket | le nom du bucket (unique au monde chez B2) |
+   | Bucket path | `/` |
+   | Bucket type | Public |
+   | Upload expiry | vide |
+   | Custom public URL | `https://f<nnn>.backblazeb2.com/file/<bucket>` (`nnn` = numéro de la région) |
+   | S3 backend URL | `https://s3.<région>.backblazeb2.com` |
+
+   Vérifier en déposant une image dans *Media* : son lien doit s'ouvrir
+   depuis un téléphone hors du LAN.
+3. **Liste des destinataires** : la créer à la main (*Lists → New*, type
+   private, opt-in single) et mettre son nom dans `LISTMONK_LIST` (défaut
+   `Famille`). Y abonner les destinataires avec un prénom ou un surnom dans le
+   nom (le template dit « Bonjour {prénom} »), dont les adresses de
+   `GAZETTE_TEST_EMAILS`.
+4. `docker compose run --rm gazette bin/console gazette:listmonk-setup` crée
+   le template `LISTMONK_TEMPLATE` (`listmonk/template-gazette.html`) s'il
+   manque, et la liste si elle manque et que le rôle a `lists:manage_all`.
+
+### 2 ter. Expéditeur (Brevo)
+
+Brevo réécrit l'expéditeur en `<nom>@<id>.brevosend.com` quand le domaine
+n'est pas authentifié chez lui (toute adresse gmail.com, par exemple). Pour
+un expéditeur propre : *Senders & domains → Domains*, ajouter un domaine
+qu'on possède, poser chez le registrar le TXT `brevo-code` à la racine, les
+deux CNAME `brevo1._domainkey` et `brevo2._domainkey`, et le TXT `_dmarc`
+(`p=none` suffit), puis « Authenticate ». Ajouter ensuite un expéditeur sur
+ce domaine (pas besoin de boîte mail : les réponses vont au `Reply-To`) et
+le mettre dans `GAZETTE_FROM` sous la forme `Nom <adresse>`.
 
 `compose.yaml` monte la CA mkcert du poste (`~/.local/share/mkcert/rootCA.pem`,
 ou `$MKCERT_CAROOT/rootCA.pem`) sur `/certs/mkcert-rootCA.pem`. Sans ce

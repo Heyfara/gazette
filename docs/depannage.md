@@ -48,3 +48,33 @@ repartir d'un numéro dupliqué.
 Le bouton attend la fin de l'enregistrement (grisé pendant « Modifié » et
 « Enregistrement… »). Si les notes viennent d'être tapées, patienter une
 seconde.
+
+## L'API répond une page HTML au lieu de JSON (« Expecting value » côté client)
+
+Erreur fatale avant Symfony. Cas vu le 2026-11-08 : des lignes sans `=`
+collées dans `.env.local` (`FormatException: Missing = in the environment
+variable declaration`). `docker compose logs gazette` donne la ligne. Ce
+fichier n'accepte que `CLE=valeur` et des commentaires `#`.
+
+## « Jeton Listmonk refusé (403) » alors que les lectures marchent
+
+Le jeton est bon mais le rôle n'a pas le droit demandé par cet appel :
+`lists:manage_all` pour créer la liste (volontairement absent du rôle
+conseillé : créer la liste à la main), `campaigns:send` pour démarrer
+l'envoi, `media:manage` pour déposer une photo. Les droits attendus sont
+dans `docs/developpement.md`. Vérifier le rôle effectif avec
+`GET /api/profile` de Listmonk.
+
+## L'expéditeur reçu est `…@<id>.brevosend.com`
+
+Brevo réécrit tout expéditeur dont le domaine n'est pas authentifié chez
+lui, sans erreur. Voir « Expéditeur (Brevo) » dans `docs/developpement.md`.
+
+## Changer de médiathèque Listmonk après un premier dépôt
+
+Les photos gardent leur ancienne adresse (`mediaUrl`) et ne sont pas
+redéposées. Supprimer les médias dans Listmonk (`DELETE /api/media/{id}`),
+vider `mediaUrl` et `mediaId` dans le JSON du numéro (`GAZETTE_DATA_DIR`),
+puis re-préparer. En dev sous Docker Desktop, réécrire le fichier en place
+(pas de renommage) ou faire un `ls` du dossier dans le container, sinon il
+voit l'ancien fichier.
