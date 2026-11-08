@@ -32,7 +32,7 @@ TLS_CA_FILE=/certs/mkcert-rootCA.pem
 LISTMONK_URL=http://10.0.0.2:9000      # l'API Listmonk, publiée sur le LAN
 LISTMONK_API_USER=gazette
 LISTMONK_API_TOKEN=…
-GAZETTE_FROM="La gazette <gazette@exemple.fr>"   # expéditeur validé côté SMTP ; vide = celui de Listmonk
+GAZETTE_FROM="La gazette <gazette@exemple.fr>"   # expéditeur sur un domaine authentifié dans Brevo (DKIM) ; une adresse gmail.com serait réécrite en @…brevosend.com ; vide = celui de Listmonk
 GAZETTE_REPLY_TO=famille@exemple.fr
 GAZETTE_TEST_EMAILS=moi@exemple.fr               # abonnés connus de Listmonk
 ```
