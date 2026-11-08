@@ -39,10 +39,12 @@ GAZETTE_TEST_EMAILS=moi@exemple.fr               # abonnés connus de Listmonk
 
 ### 2 bis. Côté Listmonk
 
-1. **Utilisateur d'API** `gazette` (*Users → New → API user*), avec un rôle
-   limité à : `campaigns:get`, `campaigns:manage`, `media:get`, `media:manage`,
-   `lists:get`, `lists:manage`, `templates:get`, `templates:manage`,
-   `subscribers:get`. Le jeton va dans `LISTMONK_API_TOKEN`.
+1. **Utilisateur d'API** `gazette` (*Users → User roles* puis *Users → New*,
+   type *API user*), avec un rôle limité à : `lists:get_all`, `templates:get`,
+   `templates:manage`, `media:get`, `media:manage`, `campaigns:get_all`,
+   `campaigns:manage_all`, `campaigns:send`. Ajouter `lists:manage_all`
+   seulement si la commande de l'étape 3 doit créer la liste. Le jeton va dans
+   `LISTMONK_API_TOKEN` (il n'est affiché qu'une fois).
 2. **Médiathèque sur un stockage public** (*Settings → Media uploads*,
    fournisseur S3, bucket public) : sinon les photos des mails pointent vers
    un Listmonk que les destinataires ne joignent pas.
