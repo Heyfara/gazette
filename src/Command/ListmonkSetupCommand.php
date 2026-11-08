@@ -3,6 +3,7 @@
 namespace App\Command;
 
 use App\Gazette\Send\SendConfiguration;
+use App\Source\SourceUnavailableException;
 use App\Source\Listmonk\ListmonkClient;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
@@ -34,7 +35,13 @@ final class ListmonkSetupCommand extends Command
 
         $listId = $this->listmonk->listId($this->config->listName);
         if (null === $listId) {
-            $listId = $this->listmonk->createList($this->config->listName);
+            try {
+                $listId = $this->listmonk->createList($this->config->listName);
+            } catch (SourceUnavailableException $e) {
+                $io->error([\sprintf('La liste « %s » manque et sa création a échoué : %s', $this->config->listName, $e->getMessage()), 'Soit la créer à la main dans Listmonk (Lists → New, type private), soit ajouter lists:manage_all au rôle.']);
+
+                return Command::FAILURE;
+            }
             $io->success(\sprintf('Liste « %s » créée (id %d). Y ajouter les destinataires, prénom compris, et les adresses de test.', $this->config->listName, $listId));
         } else {
             $io->text(\sprintf('Liste « %s » déjà là (id %d).', $this->config->listName, $listId));
