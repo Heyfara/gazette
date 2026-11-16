@@ -23,9 +23,8 @@ liste n'a pas encore été cliqué ; la liste ne contient que l'adresse de test.
 
 ## Reste à faire, dans l'ordre
 
-1. **Dépôt GitHub** `Heyfara/homelab-gazette` (public) : à créer par
-   l'utilisateur (`gh repo create … --source . --push`), puis vérifier que la
-   CI (`.github/workflows`) publie l'image sur un tag.
+1. **Dépôt GitHub** `Heyfara/gazette` (public), créé le 2026-11-16 : tag
+   `v0.1.0` → image `ghcr.io/heyfara/gazette:0.1.0`, package à rendre public.
 2. **Clé d'API Immich dédiée** « Gazette » avec `person.read` (en dev, la
    clé du dashboard sert et le filtre par personne répond 502).
 3. **Rôle Ansible `service-gazette`** : écrit le 2026-11-16 (PR #155 de

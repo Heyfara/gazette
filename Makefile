@@ -32,7 +32,7 @@ lint: ## Vérifie le conteneur Symfony et les YAML
 	$(PHP) bin/console lint:yaml config
 
 build: ## Construit l'image de prod en local
-	docker build --target prod -t homelab-gazette:local .
+	docker build --target prod -t gazette:local .
 
 sh: ## Shell dans le container PHP
 	$(DC) run --rm gazette sh

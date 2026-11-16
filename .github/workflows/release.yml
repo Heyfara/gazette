@@ -1,6 +1,6 @@
 name: Release
 
-# Un tag vX.Y.Z publie ghcr.io/<owner>/homelab-gazette:X.Y.Z (image publique).
+# Un tag vX.Y.Z publie ghcr.io/<owner>/gazette:X.Y.Z (image publique).
 # Renovate, dans homelab-ansible, propose ensuite la montée de version.
 on:
   push:
@@ -26,7 +26,7 @@ jobs:
       - id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ghcr.io/${{ github.repository_owner }}/homelab-gazette
+          images: ghcr.io/${{ github.repository }}
           tags: type=semver,pattern={{version}}
 
       - uses: docker/build-push-action@v6

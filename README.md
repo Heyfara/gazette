@@ -10,7 +10,7 @@ via Listmonk.
 - **Front** : React + Vite + Tailwind v4, dans `assets/`.
 - **Sources** : Immich (photos, albums, personnes), Listmonk (campagne et
   envoi, médiathèque sur un bucket S3 public), Brevo derrière Listmonk (SMTP).
-- **Prod** : image `ghcr.io/heyfara/homelab-gazette`, derrière le nginx
+- **Prod** : image `ghcr.io/heyfara/gazette`, derrière le nginx
   partagé du serveur, lui-même derrière Caddy (rôle Ansible `service-gazette`).
 
 ## Démarrer

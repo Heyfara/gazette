@@ -1,5 +1,5 @@
 {
-  "name": "homelab-gazette",
+  "name": "gazette",
   "private": true,
   "type": "module",
   "scripts": {
