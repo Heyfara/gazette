@@ -28,7 +28,9 @@ liste n'a pas encore été cliqué ; la liste ne contient que l'adresse de test.
    CI (`.github/workflows`) publie l'image sur un tag.
 2. **Clé d'API Immich dédiée** « Gazette » avec `person.read` (en dev, la
    clé du dashboard sert et le filtre par personne répond 502).
-3. **Rôle Ansible `service-gazette`** dans `homelab-ansible`, sur le modèle de
+3. **Rôle Ansible `service-gazette`** : écrit le 2026-11-16 (PR #155 de
+   `homelab-ansible`, en brouillon jusqu'au tag `v0.1.0` et aux secrets du
+   vault ; stack de prod essayée en local). Pour mémoire, sur le modèle de
    `service-dashboard` : conteneur sur helium derrière le nginx partagé,
    route Caddy `gazette.home`, entrée DNS Pi-hole (krypton), certificat mkcert
    régénéré, sauvegarde nocturne de `GAZETTE_DATA_DIR` vers argon (Dagu
