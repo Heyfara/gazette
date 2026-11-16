@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { SectionEditor } from '../editor/SectionEditor'
 import { IssueHeader } from '../editor/IssueHeader'
+import { NotebookPanel } from '../editor/NotebookPanel'
 import { PreviewPane, type PreviewMode } from '../editor/PreviewPane'
 import { SendPanel } from '../editor/SendPanel'
 import { useJson } from '../hooks/useJson'
@@ -10,7 +11,7 @@ import { ErrorMessage } from '../ui/ErrorMessage'
 import { button } from '../ui/styles'
 
 /**
- * Rédaction d'un numéro : en-tête, rubriques, aperçu. Chaque modification
+ * Rédaction d'un numéro : en-tête, carnet du mois, rubriques, aperçu. Chaque modification
  * est enregistrée par l'API, qui renvoie le numéro à jour (`setIssue`).
  */
 export function IssueEditorPage({ id, onBack }: { id: string; onBack: () => void }) {
@@ -103,6 +104,8 @@ export function IssueEditorPage({ id, onBack }: { id: string; onBack: () => void
         {actionError && <ErrorMessage error={actionError} />}
 
         <IssueHeader issue={issue} onIssue={update} />
+
+        <NotebookPanel issue={issue} onIssue={update} />
 
         {photoCount > maxPhotos && (
           <p role="status" className="rounded-xl bg-amber-50 p-3 text-sm text-amber-900 ring-1 ring-amber-200 dark:bg-amber-950 dark:text-amber-100 dark:ring-amber-900">

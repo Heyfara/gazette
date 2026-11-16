@@ -15,6 +15,7 @@ dev et dans le vault Ansible en prod.
 | Envoi : photos recompressées déposées dans Listmonk, campagne, test, envoi réel, panneau « Envoi » | 2026-11-07 | 54 tests PHP, 24 tests front, Listmonk fictif |
 | Côté Listmonk : utilisateur d'API et son rôle, liste, template (`gazette:listmonk-setup`), médiathèque sur un bucket S3 public (Backblaze B2) | 2026-11-08 | mail de test reçu avec les photos dans Gmail, Mail macOS, Thunderbird |
 | Expéditeur sur un domaine authentifié dans Brevo (DKIM + DMARC) | 2026-11-08 | expéditeur non réécrit dans le mail reçu |
+| Carnet du mois (notes datées par numéro), repris dans le prompt des rubriques et dans un prompt « premier jet » de tout le numéro | 2026-11-16 | 60 tests PHP, 33 tests front |
 
 Chaîne complète validée le 2026-11-08 depuis l'environnement de dev :
 rédaction → préparation (photos sur B2) → test → réception. L'envoi réel à la

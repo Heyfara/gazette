@@ -36,3 +36,14 @@ export function placeLabel(city: string | null, country: string | null): string 
 }
 
 export const STATUS_LABEL = { brouillon: 'Brouillon', teste: 'Test envoyé', envoye: 'Envoyée' } as const
+
+/** Jour courant au format AAAA-MM-JJ (heure de Paris). */
+export function today(now = new Date()): string {
+  return new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Paris', year: 'numeric', month: '2-digit', day: '2-digit' }).format(now)
+}
+
+/** « 12/11 » depuis « 2026-11-12 ». */
+export function dayLabel(date: string): string {
+  const [, m, d] = date.split('-')
+  return m && d ? `${d}/${m}` : date
+}

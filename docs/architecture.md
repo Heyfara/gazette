@@ -9,11 +9,11 @@ rédigent dans le même espace.
 ```
 src/
   Gazette/            le métier
-    Model/            Issue (numéro), Section (rubrique), Photo, IssueStatus — final readonly, copies par withX()
+    Model/            Issue (numéro), Section (rubrique), Note (carnet du mois), Photo, IssueStatus — final readonly, copies par withX()
     IssueRepository   un fichier JSON par numéro, modifications sous verrou (change())
     SectionPhotos     la liste de photos envoyée par le front → Photo[] (métadonnées lues dans Immich une fois)
     Payload           lecture et vérification d'un corps JSON → 422 avec la liste des refus
-    Prompt/           PromptBuilder : config/prompt.txt rempli avec le numéro, la famille (GAZETTE_FAMILY), la rubrique, les photos, les notes
+    Prompt/           PromptBuilder : prompt d'une rubrique (config/prompt.txt) et premier jet du numéro (config/prompt-numero.txt), remplis avec le numéro, la famille (GAZETTE_FAMILY), le carnet, les rubriques, les photos, les notes
     Html/             IssueHtmlRenderer : corps HTML du numéro (tableaux, styles en ligne) et page d'aperçu
   Source/Immich/      ImmichClient (API 3.x) et ses objets : albums, recherche (curseur), personnes, miniatures
   Controller/         un contrôleur par ressource, IssueView = ce que lit le front
@@ -22,7 +22,7 @@ src/
 assets/
   App.tsx             deux écrans : / (numéros) et /numeros/:id (rédaction)
   pages/              IssueListPage, IssueEditorPage (état du numéro, aperçu)
-  editor/             IssueHeader, SectionEditor, PhotoStrip, PhotoPicker, PromptButton, PreviewPane, SaveIndicator
+  editor/             IssueHeader, NotebookPanel (carnet du mois), SectionEditor, PhotoStrip, PhotoPicker, PromptButton, PreviewPane, SaveIndicator
   hooks/              usePath (routage minimal), useJson (une requête), useAutosave (enregistrement différé)
   http/               client.ts (les appels) et types.ts (ce que renvoie l'API)
   ui/                 styles partagés, formats (mois, dates), ErrorMessage
@@ -40,6 +40,13 @@ modification, réécriture sous verrou (`flock`), pour que deux rédacteurs qui
 enregistrent au même moment ne s'écrasent pas. Entre deux enregistrements, le
 dernier écrit gagne (pas de détection de conflit, voulu en v1).
 
+Le **carnet du mois** (`notes` du numéro) : des notes datées (AAAA-MM-JJ),
+prises au fil du mois (« on a accueilli les nouvelles poules »), rangées par
+date (même jour : ordre d'ajout). Elles ne vont jamais dans le mail : le
+prompt de chaque rubrique les reprend toutes (l'IA garde ce qui la concerne),
+et le prompt du premier jet s'en sert pour proposer tout le numéro. Les
+fichiers d'avant le carnet se lisent avec un carnet vide.
+
 Une photo copie à l'ajout ce qu'Immich sait d'elle (date, ville, pays,
 personnes nommées) : le prompt n'a plus besoin d'Immich ensuite, et un
 numéro reste lisible si une photo est supprimée d'Immich.
@@ -55,6 +62,9 @@ numéro reste lisible si une photo est supprimée d'Immich.
 | PATCH, DELETE | `/api/issues/{id}/sections/{sid}` | titre, notes, texte, `photos: [{assetId, caption}]` |
 | PUT | `/api/issues/{id}/sections-order` | `{ order: [sid…] }` |
 | GET | `/api/issues/{id}/sections/{sid}/prompt` | le prompt à coller |
+| POST | `/api/issues/{id}/notes` | note du carnet : `text`, `date` (défaut : aujourd'hui, heure de Paris) ; 200 notes au plus |
+| PATCH, DELETE | `/api/issues/{id}/notes/{nid}` | texte, date ; suppression |
+| GET | `/api/issues/{id}/prompt` | le prompt du premier jet de tout le numéro (carnet + rubriques commencées) |
 | GET | `/api/issues/{id}/preview` | page HTML du numéro, photos relayées |
 | POST | `/api/issues/{id}/prepare` | photos recompressées et déposées dans Listmonk, campagne créée ou mise à jour (idempotent) |
 | GET | `/api/issues/{id}/mail-preview` | le mail rendu par Listmonk, template compris (prépare au passage) |
@@ -122,7 +132,8 @@ Seules les photos sans `mediaUrl` sont déposées : changer de médiathèque
 | `GAZETTE_NAME` | nom par défaut des numéros | — |
 | `GAZETTE_FAMILY` | phrase présentant la famille, injectée dans le prompt | — |
 | `GAZETTE_DATA_DIR` | dossier des numéros | `var/data` |
-| `GAZETTE_PROMPT_FILE` | gabarit du prompt | `config/prompt.txt` |
+| `GAZETTE_PROMPT_FILE` | gabarit du prompt d'une rubrique | `config/prompt.txt` |
+| `GAZETTE_DRAFT_PROMPT_FILE` | gabarit du prompt du premier jet | `config/prompt-numero.txt` |
 | `IMMICH_URL`, `IMMICH_API_KEY`, `TLS_CA_FILE` | Immich (lecture seule) | — |
 | `LISTMONK_URL`, `LISTMONK_API_USER`, `LISTMONK_API_TOKEN` | API Listmonk ; vides = envoi désactivé, le reste marche | — |
 | `LISTMONK_LIST`, `LISTMONK_TEMPLATE` | noms de la liste et du template | `Famille`, `Gazette` |

@@ -8,13 +8,13 @@ use PHPUnit\Framework\TestCase;
 
 final class PromptBuilderTest extends TestCase
 {
-    private function builder(string $template = ''): PromptBuilder
+    private function builder(string $template = '', string $draftTemplate = ''): PromptBuilder
     {
-        if ('' === $template) {
+        if ('' === $template && '' === $draftTemplate) {
             return new PromptBuilder('', \dirname(__DIR__, 2), 'Alice (la maman), Bob (le papa), Léo et Emma (les enfants)');
         }
 
-        return new PromptBuilder($this->file($template), '/nulle-part', 'Alice et Bob');
+        return new PromptBuilder($this->file($template), '/nulle-part', 'Alice et Bob', $this->file($draftTemplate));
     }
 
     private function file(string $template): string
@@ -37,9 +37,43 @@ final class PromptBuilderTest extends TestCase
         self::assertStringContainsString('rubrique « À la mer »', $prompt);
         self::assertStringContainsString("1. 15/10/2026, Saint-Malo (France), personnes : Léo, Emma, légende : Léo et Emma\n", $prompt);
         self::assertStringContainsString("(notes de l'auteur) : notes\n", $prompt);
+        self::assertStringContainsString("- 03/11 : On a accueilli les nouvelles poules\n- 12/11 : Emma a perdu sa première dent\n", $prompt);
         self::assertStringContainsString('garder le même ton : (aucune)', $prompt, 'première rubrique : pas de précédente');
         self::assertStringEndsWith("Réponds uniquement avec le paragraphe.\n", $prompt);
         self::assertStringNotContainsString('{{', $prompt);
+    }
+
+    public function testEmptyNotebook(): void
+    {
+        $issue = IssueTest::issue();
+        foreach ($issue->notes as $note) {
+            $issue = $issue->withoutNote($note->id);
+        }
+
+        self::assertSame("(vide)\n", $this->builder('{{carnet}}')->build($issue, $issue->sections[0]));
+        self::assertSame("(vide)\n", $this->builder('', '{{carnet}}')->buildDraft($issue));
+    }
+
+    public function testDraftOfTheWholeIssue(): void
+    {
+        $issue = IssueTest::issue();
+
+        $prompt = $this->builder()->buildDraft($issue);
+
+        self::assertStringContainsString('« La gazette »', $prompt);
+        self::assertStringContainsString('Numéro 4, novembre 2026.', $prompt);
+        self::assertStringContainsString('La famille : Alice (la maman)', $prompt);
+        self::assertStringContainsString("- 03/11 : On a accueilli les nouvelles poules\n- 12/11 : Emma a perdu sa première dent\n", $prompt);
+        self::assertStringContainsString("« À la mer »\n  notes : notes\n  photos :\n  1. 15/10/2026, Saint-Malo (France), personnes : Léo, Emma, légende : Léo et Emma\n", $prompt);
+        self::assertStringContainsString("« (sans titre) »\n  photos : (aucune)\n", $prompt);
+        self::assertStringNotContainsString('{{', $prompt);
+    }
+
+    public function testDraftWithoutSections(): void
+    {
+        $issue = IssueTest::issue()->withoutSection('s1')->withoutSection('s2');
+
+        self::assertSame("(aucune pour l'instant)\n", $this->builder('', '{{rubriques}}')->buildDraft($issue));
     }
 
     public function testPreviousSectionTextAndEmptyFields(): void

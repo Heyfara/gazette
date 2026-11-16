@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { currentMonth, dateLabel, monthLabel, monthRange, placeLabel } from './format'
+import { currentMonth, dateLabel, dayLabel, monthLabel, monthRange, placeLabel, today } from './format'
 
 describe('format', () => {
   it('mois en français et bornes du mois', () => {
@@ -9,6 +9,11 @@ describe('format', () => {
     expect(monthRange('2028-02')).toEqual({ from: '2028-02-01', to: '2028-02-29' })
     // 23 h 30 UTC le 30 novembre = minuit passé à Paris
     expect(currentMonth(new Date('2026-11-30T23:30:00Z'))).toBe('2026-12')
+  })
+
+  it('jour du carnet', () => {
+    expect(today(new Date('2026-11-30T23:30:00Z'))).toBe('2026-12-01')
+    expect(dayLabel('2026-11-03')).toBe('03/11')
   })
 
   it('date et lieu d’une photo', () => {

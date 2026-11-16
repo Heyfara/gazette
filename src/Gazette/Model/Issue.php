@@ -2,11 +2,12 @@
 
 namespace App\Gazette\Model;
 
-/** Un numéro de la gazette : en-tête, sections ordonnées, état d'envoi. */
+/** Un numéro de la gazette : en-tête, sections ordonnées, carnet du mois, état d'envoi. */
 final readonly class Issue
 {
     /**
      * @param list<Section> $sections
+     * @param list<Note>    $notes    le carnet du mois, rangé par date
      */
     public function __construct(
         public string $id,
@@ -20,6 +21,7 @@ final readonly class Issue
         public \DateTimeImmutable $createdAt,
         public ?\DateTimeImmutable $sentAt = null,
         public ?int $listmonkCampaignId = null,
+        public array $notes = [],
     ) {
     }
 
@@ -86,6 +88,35 @@ final readonly class Issue
         )));
     }
 
+    public function note(string $id): ?Note
+    {
+        foreach ($this->notes as $note) {
+            if ($note->id === $id) {
+                return $note;
+            }
+        }
+
+        return null;
+    }
+
+    public function withNote(Note $note): self
+    {
+        return $this->copy(notes: [...$this->notes, $note]);
+    }
+
+    /**
+     * @param callable(Note): Note $change
+     */
+    public function withNoteChanged(string $id, callable $change): self
+    {
+        return $this->copy(notes: array_map(static fn (Note $n): Note => $n->id === $id ? $change($n) : $n, $this->notes));
+    }
+
+    public function withoutNote(string $id): self
+    {
+        return $this->copy(notes: array_filter($this->notes, static fn (Note $n): bool => $n->id !== $id));
+    }
+
     public function withStatus(IssueStatus $status, ?\DateTimeImmutable $sentAt = null, ?int $campaignId = null): self
     {
         return $this->copy(status: $status, sentAt: $sentAt ?? $this->sentAt, listmonkCampaignId: $campaignId ?? $this->listmonkCampaignId);
@@ -115,6 +146,7 @@ final readonly class Issue
             'createdAt' => $this->createdAt->format(\DateTimeInterface::ATOM),
             'sentAt' => $this->sentAt?->format(\DateTimeInterface::ATOM),
             'listmonkCampaignId' => $this->listmonkCampaignId,
+            'notes' => array_map(static fn (Note $n): array => $n->toArray(), $this->notes),
         ];
     }
 
@@ -134,14 +166,21 @@ final readonly class Issue
             new \DateTimeImmutable((string) $a['createdAt']),
             isset($a['sentAt']) ? new \DateTimeImmutable((string) $a['sentAt']) : null,
             isset($a['listmonkCampaignId']) ? (int) $a['listmonkCampaignId'] : null,
+            array_values(array_map(Note::fromArray(...), $a['notes'] ?? [])),
         );
     }
 
     /**
      * @param list<Section>|null $sections
+     * @param array<Note>|null   $notes    rangées ici par date (même jour : ordre d'ajout)
      */
-    private function copy(?string $name = null, ?string $title = null, ?string $month = null, ?IssueStatus $status = null, ?array $sections = null, ?\DateTimeImmutable $sentAt = null, ?int $listmonkCampaignId = null): self
+    private function copy(?string $name = null, ?string $title = null, ?string $month = null, ?IssueStatus $status = null, ?array $sections = null, ?\DateTimeImmutable $sentAt = null, ?int $listmonkCampaignId = null, ?array $notes = null): self
     {
+        if (null !== $notes) {
+            $notes = array_values($notes);
+            usort($notes, static fn (Note $a, Note $b): int => $a->date <=> $b->date);
+        }
+
         return new self(
             $this->id,
             $this->number,
@@ -153,6 +192,7 @@ final readonly class Issue
             $this->createdAt,
             $sentAt ?? $this->sentAt,
             $listmonkCampaignId ?? $this->listmonkCampaignId,
+            $notes ?? $this->notes,
         );
     }
 }

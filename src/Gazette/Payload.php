@@ -74,6 +74,23 @@ final class Payload
         return $value;
     }
 
+    /** Date AAAA-MM-JJ qui existe au calendrier. */
+    public function date(string $key): ?string
+    {
+        $value = $this->string($key, 10);
+        if (null === $value) {
+            return null;
+        }
+        $parsed = \DateTimeImmutable::createFromFormat('!Y-m-d', $value);
+        if (false === $parsed || $parsed->format('Y-m-d') !== $value) {
+            $this->errors[] = \sprintf('« %s » doit être une date AAAA-MM-JJ.', $key);
+
+            return null;
+        }
+
+        return $value;
+    }
+
     /**
      * Liste de chaînes (identifiants).
      *

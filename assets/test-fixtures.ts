@@ -16,6 +16,10 @@ export const issue: IssueView = {
   createdAt: '2026-11-07T20:00:00+01:00',
   sentAt: null,
   campaignId: null,
+  notes: [
+    { id: 'n1', date: '2026-11-03', text: 'On a accueilli les nouvelles poules' },
+    { id: 'n2', date: '2026-11-12', text: 'Emma a perdu sa première dent' },
+  ],
   sections: [
     {
       id: 's1',

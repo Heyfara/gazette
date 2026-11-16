@@ -1,26 +1,27 @@
 import { useState } from 'react'
-import { fetchPrompt } from '../http/client'
 import { button, field } from '../ui/styles'
 
 interface Props {
-  issueId: string
-  sectionId: string
+  /** Va chercher le prompt assemblé par le serveur */
+  load: () => Promise<string>
   /** Des notes pas encore enregistrées : on attend avant de bâtir le prompt */
   pendingSave: boolean
+  label?: string
+  title?: string
 }
 
 /**
- * « Copier le prompt » : le serveur assemble le prompt de la rubrique, on le
- * met dans le presse-papiers. Si le presse-papiers est refusé (http, iframe),
- * on l'affiche à copier à la main.
+ * « Copier le prompt » : le serveur assemble le prompt (d'une rubrique, ou du
+ * premier jet du numéro), on le met dans le presse-papiers. Si le
+ * presse-papiers est refusé (http, iframe), on l'affiche à copier à la main.
  */
-export function PromptButton({ issueId, sectionId, pendingSave }: Props) {
+export function PromptButton({ load, pendingSave, label = 'Copier le prompt', title = 'Prompt à coller dans ChatGPT ou Claude' }: Props) {
   const [state, setState] = useState<{ status: 'idle' | 'loading' | 'copied' | 'shown' | 'error'; prompt?: string; message?: string }>({ status: 'idle' })
 
   const copy = async () => {
     setState({ status: 'loading' })
     try {
-      const prompt = await fetchPrompt(issueId, sectionId)
+      const prompt = await load()
       try {
         await navigator.clipboard.writeText(prompt)
         setState({ status: 'copied', prompt })
@@ -35,8 +36,8 @@ export function PromptButton({ issueId, sectionId, pendingSave }: Props) {
 
   return (
     <div className="flex flex-col items-end gap-2">
-      <button type="button" className={button.secondary} onClick={copy} disabled={state.status === 'loading' || pendingSave} title={pendingSave ? 'Enregistrement des notes en cours…' : 'Prompt à coller dans ChatGPT ou Claude'}>
-        {state.status === 'loading' ? 'Préparation…' : state.status === 'copied' ? 'Prompt copié ✓' : 'Copier le prompt'}
+      <button type="button" className={button.secondary} onClick={copy} disabled={state.status === 'loading' || pendingSave} title={pendingSave ? 'Enregistrement des notes en cours…' : title}>
+        {state.status === 'loading' ? 'Préparation…' : state.status === 'copied' ? 'Prompt copié ✓' : label}
       </button>
       {state.status === 'error' && (
         <p role="alert" className="text-xs text-rose-700 dark:text-rose-300">

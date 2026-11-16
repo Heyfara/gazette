@@ -1,0 +1,17 @@
+Tu écris pour « {{nom}} », la petite gazette que notre famille envoie chaque mois aux grands-parents pour leur donner des nouvelles. Numéro {{numero}}, {{mois}}.
+
+La famille : {{famille}}.
+
+Voici notre carnet du mois, noté au fil des jours :
+{{carnet}}
+
+Les rubriques déjà commencées, avec leurs notes et leurs photos :
+{{rubriques}}
+
+Propose un premier jet de tout le numéro. Garde les rubriques déjà commencées, dans cet ordre, et ajoute-en pour ce qui, dans le carnet, n'a pas encore sa place (regroupe ce qui va ensemble : trois à six rubriques en tout suffisent). Pour chaque rubrique, un titre court et un paragraphe de 80 à 120 mots, en français, chaleureux et vivant, comme une lettre qu'on écrit à des grands-parents qu'on aime : des détails concrets, un peu de tendresse et d'humour, les enfants appelés par leur prénom, à la première personne du pluriel avec « nous » ou « on », au naturel. Pas de liste, pas de formules creuses ni d'emphase. N'invente rien qui ne soit pas dans le carnet, les notes ou les photos.
+
+Présente chaque rubrique ainsi, sans rien d'autre avant ni après :
+
+## Titre de la rubrique
+
+Le paragraphe.

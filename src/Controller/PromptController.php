@@ -11,10 +11,17 @@ final class PromptController
 {
     /** Le prompt à coller dans ChatGPT ou Claude pour cette rubrique. */
     #[Route('/api/issues/{id}/sections/{sectionId}/prompt', methods: ['GET'])]
-    public function __invoke(string $id, string $sectionId, IssueRepository $issues, PromptBuilder $prompts): JsonResponse
+    public function section(string $id, string $sectionId, IssueRepository $issues, PromptBuilder $prompts): JsonResponse
     {
         $issue = $issues->get($id);
 
         return new JsonResponse(['prompt' => $prompts->build($issue, SectionController::sectionOf($issue, $sectionId))]);
+    }
+
+    /** Le prompt du premier jet de tout le numéro : carnet du mois et rubriques déjà commencées. */
+    #[Route('/api/issues/{id}/prompt', methods: ['GET'])]
+    public function draft(string $id, IssueRepository $issues, PromptBuilder $prompts): JsonResponse
+    {
+        return new JsonResponse(['prompt' => $prompts->buildDraft($issues->get($id))]);
     }
 }

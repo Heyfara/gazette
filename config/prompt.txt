@@ -9,6 +9,9 @@ Les photos qui accompagnent la rubrique :
 
 Ce qui s'est passé, en vrac (notes de l'auteur) : {{notes}}
 
+Le carnet du mois, noté au fil des jours pour tout le numéro (n'en garde que ce qui concerne cette rubrique, et ignore le reste) :
+{{carnet}}
+
 Rubrique précédente du même numéro, pour garder le même ton : {{precedent}}
 
 Réponds uniquement avec le paragraphe.

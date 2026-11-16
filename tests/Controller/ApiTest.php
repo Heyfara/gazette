@@ -200,6 +200,42 @@ final class ApiTest extends WebTestCase
         self::assertSame(404, $this->client->getResponse()->getStatusCode());
     }
 
+    public function testNotebookAndDraftPrompt(): void
+    {
+        $id = $this->json('POST', '/api/issues', ['month' => '2026-11'], 201)['id'];
+
+        $issue = $this->json('POST', "/api/issues/$id/notes", ['text' => '  On a accueilli les nouvelles poules ', 'date' => '2026-11-12'], 201);
+        self::assertSame([['date' => '2026-11-12', 'text' => 'On a accueilli les nouvelles poules']], array_map(static fn (array $n): array => ['date' => $n['date'], 'text' => $n['text']], $issue['notes']));
+        $first = $issue['notes'][0]['id'];
+
+        $issue = $this->json('POST', "/api/issues/$id/notes", ['text' => 'Sans date'], 201);
+        $today = (new \DateTimeImmutable('now', new \DateTimeZone('Europe/Paris')))->format('Y-m-d');
+        self::assertContains($today, array_column($issue['notes'], 'date'), 'date du jour par défaut');
+        $second = array_values(array_filter($issue['notes'], static fn (array $n): bool => 'Sans date' === $n['text']))[0]['id'];
+
+        $issue = $this->json('POST', "/api/issues/$id/notes", ['text' => 'Fête de l\'école', 'date' => '2026-11-02'], 201);
+        self::assertSame('Fête de l\'école', $issue['notes'][0]['text'], 'rangées par date');
+        self::assertSame(3, $this->json('GET', '/api/issues')[0]['notes'], 'le nombre de notes dans la liste');
+
+        $issue = $this->json('PATCH', "/api/issues/$id/notes/$first", ['text' => 'Les poules sont arrivées', 'date' => '2026-11-01']);
+        self::assertSame(['2026-11-01', 'Les poules sont arrivées'], [$issue['notes'][0]['date'], $issue['notes'][0]['text']]);
+
+        $issue = $this->json('DELETE', "/api/issues/$id/notes/$second");
+        self::assertCount(2, $issue['notes']);
+        $this->json('DELETE', "/api/issues/$id/notes/inconnue", expectedStatus: 404);
+
+        self::assertSame(['« date » doit être une date AAAA-MM-JJ.', '« text » ne peut pas être vide.'], $this->json('POST', "/api/issues/$id/notes", ['text' => ' ', 'date' => '12/11/2026'], 422)['details']);
+        self::assertSame(['« date » doit être une date AAAA-MM-JJ.'], $this->json('PATCH', "/api/issues/$id/notes/$first", ['date' => '2026-02-30'], 422)['details']);
+
+        $section = $this->json('POST', "/api/issues/$id/sections", ['title' => 'La basse-cour'], 201)['sections'][0]['id'];
+        self::assertStringContainsString('- 01/11 : Les poules sont arrivées', $this->json('GET', "/api/issues/$id/sections/$section/prompt")['prompt']);
+
+        $draft = $this->json('GET', "/api/issues/$id/prompt")['prompt'];
+        self::assertStringContainsString("- 01/11 : Les poules sont arrivées\n- 02/11 : Fête de l'école\n", $draft);
+        self::assertStringContainsString('« La basse-cour »', $draft);
+        $this->json('GET', '/api/issues/deadbeef/prompt', expectedStatus: 404);
+    }
+
     public function testWritesFromAnotherSiteAreRefused(): void
     {
         $this->json('POST', '/api/issues', [], 403, ['HTTP_SEC_FETCH_SITE' => 'cross-site']);
@@ -287,6 +323,7 @@ final class ApiTest extends WebTestCase
 
         self::assertSame('Ce numéro a déjà été envoyé.', $this->json('POST', "/api/issues/$id/prepare", expectedStatus: 409)['error']);
         $this->json('PATCH', "/api/issues/$id", ['title' => 'x'], 409);
+        $this->json('POST', "/api/issues/$id/notes", ['text' => 'trop tard'], 409);
         $this->json('DELETE', "/api/issues/$id", expectedStatus: 409);
     }
 

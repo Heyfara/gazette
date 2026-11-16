@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Gazette\Model\Issue;
+use App\Gazette\Model\Note;
 use App\Gazette\Model\Section;
 
 /** Le numéro tel que le front le lit (assets/http/types.ts : IssueView, IssueSummary). */
@@ -15,6 +16,7 @@ final class IssueView
     {
         $view = self::summary($issue);
         $view['sections'] = array_map(static fn (Section $s): array => $s->toArray(), $issue->sections);
+        $view['notes'] = array_map(static fn (Note $n): array => $n->toArray(), $issue->notes);
 
         return $view;
     }
@@ -34,6 +36,7 @@ final class IssueView
             'editable' => $issue->status->editable(),
             'sections' => \count($issue->sections),
             'photos' => \count($issue->photos()),
+            'notes' => \count($issue->notes),
             'createdAt' => $issue->createdAt->format(\DateTimeInterface::ATOM),
             'sentAt' => $issue->sentAt?->format(\DateTimeInterface::ATOM),
             'campaignId' => $issue->listmonkCampaignId,

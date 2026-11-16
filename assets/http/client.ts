@@ -54,6 +54,13 @@ export const deleteSection = (id: string, sectionId: string) => getJson<IssueVie
 export const reorderSections = (id: string, order: string[]) => getJson<IssueView>(`${issueUrl(id)}/sections-order`, undefined, sendJson('PUT', { order }))
 
 export const fetchPrompt = (id: string, sectionId: string) => getJson<{ prompt: string }>(`${sectionUrl(id, sectionId)}/prompt`).then((r) => r.prompt)
+/** Le prompt du premier jet de tout le numéro (carnet + rubriques commencées). */
+export const fetchDraftPrompt = (id: string) => getJson<{ prompt: string }>(`${issueUrl(id)}/prompt`).then((r) => r.prompt)
+
+const noteUrl = (id: string, noteId: string) => `${issueUrl(id)}/notes/${encodeURIComponent(noteId)}`
+export const addNote = (id: string, fields: { text: string; date?: string }) => getJson<IssueView>(`${issueUrl(id)}/notes`, undefined, sendJson('POST', fields))
+export const patchNote = (id: string, noteId: string, fields: { text?: string; date?: string }) => getJson<IssueView>(noteUrl(id, noteId), undefined, sendJson('PATCH', fields))
+export const deleteNote = (id: string, noteId: string) => getJson<IssueView>(noteUrl(id, noteId), undefined, { method: 'DELETE' })
 
 /** Adresse de l'aperçu du numéro (page HTML complète), à mettre dans une iframe. */
 export const previewUrl = (id: string, version: number) => `${issueUrl(id)}/preview?v=${version}`

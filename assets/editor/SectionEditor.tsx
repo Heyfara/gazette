@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useAutosave } from '../hooks/useAutosave'
-import { patchSection } from '../http/client'
+import { fetchPrompt, patchSection } from '../http/client'
 import type { IssueView, PhotoInput, SectionView } from '../http/types'
 import { button, card, field } from '../ui/styles'
 import { PhotoPicker } from './PhotoPicker'
@@ -104,7 +104,7 @@ export function SectionEditor({ issue, section, index, onIssue, onDelete, onMove
         <div className="flex flex-col gap-1 text-sm">
           <div className="flex items-center justify-between">
             <span className="text-stone-600 dark:text-slate-400">Texte de la rubrique</span>
-            {!disabled && <PromptButton issueId={issue.id} sectionId={section.id} pendingSave={save.status === 'pending' || save.status === 'saving'} />}
+            {!disabled && <PromptButton load={() => fetchPrompt(issue.id, section.id)} pendingSave={save.status === 'pending' || save.status === 'saving'} />}
           </div>
           <textarea
             className={`${field} min-h-40 font-serif text-base`}

@@ -19,6 +19,13 @@ export interface SectionView {
   photos: PhotoView[]
 }
 
+/** Une note du carnet du mois (date AAAA-MM-JJ) */
+export interface NoteView {
+  id: string
+  date: string
+  text: string
+}
+
 export interface IssueSummary {
   id: string
   number: number
@@ -29,14 +36,17 @@ export interface IssueSummary {
   editable: boolean
   sections: number
   photos: number
+  /** Notes dans le carnet du mois */
+  notes: number
   createdAt: string
   sentAt: string | null
   /** Campagne Listmonk, une fois le numéro préparé */
   campaignId: number | null
 }
 
-export interface IssueView extends Omit<IssueSummary, 'sections'> {
+export interface IssueView extends Omit<IssueSummary, 'sections' | 'notes'> {
   sections: SectionView[]
+  notes: NoteView[]
 }
 
 export interface SendConfigView {
