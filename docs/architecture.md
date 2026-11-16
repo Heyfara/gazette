@@ -13,7 +13,7 @@ src/
     IssueRepository   un fichier JSON par numéro, modifications sous verrou (change())
     SectionPhotos     la liste de photos envoyée par le front → Photo[] (métadonnées lues dans Immich une fois)
     Payload           lecture et vérification d'un corps JSON → 422 avec la liste des refus
-    Prompt/           PromptBuilder : prompt d'une rubrique (config/prompt.txt) et premier jet du numéro (config/prompt-numero.txt), remplis avec le numéro, la famille (GAZETTE_FAMILY), le carnet, les rubriques, les photos, les notes
+    Prompt/           PromptBuilder : prompt d'une rubrique (config/prompt.txt) et premier jet du numéro (config/prompt-numero.txt), remplis avec le numéro, la famille (GAZETTE_FAMILY), le carnet, les rubriques, les photos
     Html/             IssueHtmlRenderer : corps HTML du numéro (tableaux, styles en ligne) et page d'aperçu
   Source/Immich/      ImmichClient (API 3.x) et ses objets : albums, recherche (curseur), personnes, miniatures
   Controller/         un contrôleur par ressource, IssueView = ce que lit le front
@@ -40,12 +40,14 @@ modification, réécriture sous verrou (`flock`), pour que deux rédacteurs qui
 enregistrent au même moment ne s'écrasent pas. Entre deux enregistrements, le
 dernier écrit gagne (pas de détection de conflit, voulu en v1).
 
-Le **carnet du mois** (`notes` du numéro) : des notes datées (AAAA-MM-JJ),
-prises au fil du mois (« on a accueilli les nouvelles poules »), rangées par
-date (même jour : ordre d'ajout). Elles ne vont jamais dans le mail : le
-prompt de chaque rubrique les reprend toutes (l'IA garde ce qui la concerne),
-et le prompt du premier jet s'en sert pour proposer tout le numéro. Les
-fichiers d'avant le carnet se lisent avec un carnet vide.
+Le **carnet du mois** (`notes` du numéro) est le seul endroit des notes : des
+notes datées (AAAA-MM-JJ), prises au fil du mois (« on a accueilli les
+nouvelles poules »), rangées par date (même jour : ordre d'ajout). Elles ne
+vont jamais dans le mail : le prompt de chaque rubrique les reprend toutes
+(l'IA garde ce qui la concerne), et le prompt du premier jet s'en sert pour
+proposer tout le numéro. Les rubriques n'ont plus de notes à elles (retirées
+le 2026-11-16) : celles des anciens fichiers passent dans le carnet à la
+lecture, au 1er du mois, préfixées du titre de la rubrique.
 
 Une photo copie à l'ajout ce qu'Immich sait d'elle (date, ville, pays,
 personnes nommées) : le prompt n'a plus besoin d'Immich ensuite, et un
@@ -59,7 +61,7 @@ numéro reste lisible si une photo est supprimée d'Immich.
 | GET, POST | `/api/issues` | les numéros ; création (`month`, `name`, `title`) |
 | GET, PATCH, DELETE | `/api/issues/{id}` | un numéro ; en-tête ; suppression (brouillon seulement) |
 | POST | `/api/issues/{id}/sections` | nouvelle rubrique |
-| PATCH, DELETE | `/api/issues/{id}/sections/{sid}` | titre, notes, texte, `photos: [{assetId, caption}]` |
+| PATCH, DELETE | `/api/issues/{id}/sections/{sid}` | titre, texte, `photos: [{assetId, caption}]` |
 | PUT | `/api/issues/{id}/sections-order` | `{ order: [sid…] }` |
 | GET | `/api/issues/{id}/sections/{sid}/prompt` | le prompt à coller |
 | POST | `/api/issues/{id}/notes` | note du carnet : `text`, `date` (défaut : aujourd'hui, heure de Paris) ; 200 notes au plus |

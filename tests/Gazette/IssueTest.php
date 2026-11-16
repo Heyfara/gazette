@@ -14,10 +14,10 @@ final class IssueTest extends TestCase
     public static function issue(): Issue
     {
         return new Issue('ab12cd34', 4, 'La gazette', 'Spécial mer', '2026-11', IssueStatus::Draft, [
-            new Section('s1', 'À la mer', 'notes', "Un texte.\n\nDeux.", [
+            new Section('s1', 'À la mer', "Un texte.\n\nDeux.", [
                 new Photo('0a3c1d6e-5b2f-4c8a-9d1e-2f3a4b5c6d71', new \DateTimeImmutable('2026-10-15 14:30'), 'Saint-Malo', 'France', ['Léo', 'Emma'], 'Léo et Emma'),
             ]),
-            new Section('s2', '', '', '', []),
+            new Section('s2', '', '', []),
         ], new \DateTimeImmutable('2026-11-07 20:00:00+01:00'), notes: [
             new Note('n1', '2026-11-03', 'On a accueilli les nouvelles poules'),
             new Note('n2', '2026-11-12', 'Emma a perdu sa première dent'),
@@ -103,6 +103,20 @@ final class IssueTest extends TestCase
         self::assertNull($issue->note('n3'));
         self::assertCount(3, $issue->notes);
         self::assertEquals($issue, Issue::fromArray(json_decode(json_encode($issue->toArray(), \JSON_THROW_ON_ERROR), true)));
+    }
+
+    public function testOldSectionNotesMoveToTheNotebook(): void
+    {
+        $data = self::issue()->toArray();
+        $data['sections'][0]['notes'] = "  peur des vagues\npuis adoré ";
+        $data['sections'][1]['notes'] = '';
+
+        $issue = Issue::fromArray($data);
+
+        self::assertSame(['2026-11-01', '« À la mer » : peur des vagues'."\n".'puis adoré'], [$issue->notes[0]->date, $issue->notes[0]->text], 'en tête du carnet, au 1er du mois');
+        self::assertCount(3, $issue->notes, 'les rubriques sans notes n\'ajoutent rien');
+        self::assertArrayNotHasKey('notes', $issue->toArray()['sections'][0]);
+        self::assertEquals($issue, Issue::fromArray($issue->toArray()), 'reprise une seule fois');
     }
 
     public function testOldFilesWithoutNotebook(): void

@@ -36,7 +36,6 @@ final class PromptBuilderTest extends TestCase
         self::assertStringContainsString('La famille : Alice (la maman), Bob (le papa), Léo et Emma (les enfants).', $prompt);
         self::assertStringContainsString('rubrique « À la mer »', $prompt);
         self::assertStringContainsString("1. 15/10/2026, Saint-Malo (France), personnes : Léo, Emma, légende : Léo et Emma\n", $prompt);
-        self::assertStringContainsString("(notes de l'auteur) : notes\n", $prompt);
         self::assertStringContainsString("- 03/11 : On a accueilli les nouvelles poules\n- 12/11 : Emma a perdu sa première dent\n", $prompt);
         self::assertStringContainsString('garder le même ton : (aucune)', $prompt, 'première rubrique : pas de précédente');
         self::assertStringEndsWith("Réponds uniquement avec le paragraphe.\n", $prompt);
@@ -64,7 +63,7 @@ final class PromptBuilderTest extends TestCase
         self::assertStringContainsString('Numéro 4, novembre 2026.', $prompt);
         self::assertStringContainsString('La famille : Alice (la maman)', $prompt);
         self::assertStringContainsString("- 03/11 : On a accueilli les nouvelles poules\n- 12/11 : Emma a perdu sa première dent\n", $prompt);
-        self::assertStringContainsString("« À la mer »\n  notes : notes\n  photos :\n  1. 15/10/2026, Saint-Malo (France), personnes : Léo, Emma, légende : Léo et Emma\n", $prompt);
+        self::assertStringContainsString("« À la mer »\n  photos :\n  1. 15/10/2026, Saint-Malo (France), personnes : Léo, Emma, légende : Léo et Emma\n", $prompt);
         self::assertStringContainsString("« (sans titre) »\n  photos : (aucune)\n", $prompt);
         self::assertStringNotContainsString('{{', $prompt);
     }
@@ -80,9 +79,9 @@ final class PromptBuilderTest extends TestCase
     {
         $issue = IssueTest::issue();
 
-        $prompt = $this->builder("{{rubrique}}|{{photos}}|{{notes}}|{{precedent}}")->build($issue, $issue->sections[1]);
+        $prompt = $this->builder("{{rubrique}}|{{photos}}|{{precedent}}")->build($issue, $issue->sections[1]);
 
-        self::assertSame("(sans titre)|(aucune)|(aucune)|Un texte.\n\nDeux.\n", $prompt);
+        self::assertSame("(sans titre)|(aucune)|Un texte.\n\nDeux.\n", $prompt);
     }
 
     public function testPhotoWithoutAnyInformation(): void

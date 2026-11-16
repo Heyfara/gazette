@@ -13,7 +13,7 @@ use Symfony\Component\DependencyInjection\Attribute\Autowire;
  * sait déjà. Aucune IA ici.
  *
  * - rubrique (config/prompt.txt, ou GAZETTE_PROMPT_FILE) : {{nom}}, {{numero}}, {{mois}},
- *   {{famille}}, {{rubrique}}, {{photos}}, {{notes}}, {{precedent}}, {{carnet}} ;
+ *   {{famille}}, {{rubrique}}, {{photos}}, {{precedent}}, {{carnet}} ;
  * - premier jet du numéro (config/prompt-numero.txt, ou GAZETTE_DRAFT_PROMPT_FILE) :
  *   {{nom}}, {{numero}}, {{mois}}, {{famille}}, {{carnet}}, {{rubriques}}.
  *
@@ -55,7 +55,6 @@ final readonly class PromptBuilder
         return trim(strtr($template, $this->common($issue) + [
             '{{rubrique}}' => self::title($section),
             '{{photos}}' => self::photos($section),
-            '{{notes}}' => '' === trim($section->notes) ? '(aucune)' : trim($section->notes),
             '{{precedent}}' => null === $previous || '' === trim($previous->text) ? '(aucune)' : trim($previous->text),
         ]))."\n";
     }
@@ -65,9 +64,6 @@ final readonly class PromptBuilder
     {
         $sections = array_map(static function (Section $s): string {
             $lines = [\sprintf('« %s »', self::title($s))];
-            if ('' !== trim($s->notes)) {
-                $lines[] = '  notes : '.trim($s->notes);
-            }
             $lines[] = [] === $s->photos ? '  photos : (aucune)' : "  photos :\n  ".str_replace("\n", "\n  ", self::photos($s));
 
             return implode("\n", $lines);

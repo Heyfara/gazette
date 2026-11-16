@@ -4,7 +4,7 @@ import { button, field } from '../ui/styles'
 interface Props {
   /** Va chercher le prompt assemblé par le serveur */
   load: () => Promise<string>
-  /** Des notes pas encore enregistrées : on attend avant de bâtir le prompt */
+  /** Une modification pas encore enregistrée : on attend avant de bâtir le prompt */
   pendingSave: boolean
   label?: string
   title?: string
@@ -36,7 +36,7 @@ export function PromptButton({ load, pendingSave, label = 'Copier le prompt', ti
 
   return (
     <div className="flex flex-col items-end gap-2">
-      <button type="button" className={button.secondary} onClick={copy} disabled={state.status === 'loading' || pendingSave} title={pendingSave ? 'Enregistrement des notes en cours…' : title}>
+      <button type="button" className={button.secondary} onClick={copy} disabled={state.status === 'loading' || pendingSave} title={pendingSave ? 'Enregistrement en cours…' : title}>
         {state.status === 'loading' ? 'Préparation…' : state.status === 'copied' ? 'Prompt copié ✓' : label}
       </button>
       {state.status === 'error' && (

@@ -14,14 +14,15 @@ describe('SectionEditor', () => {
     return { ...mock, onIssue }
   }
 
-  it('enregistre les notes un peu après la frappe et le dit', async () => {
+  it('enregistre le texte un peu après la frappe et le dit', async () => {
     const { calls, onIssue } = setup()
 
-    fireEvent.change(screen.getByLabelText(/Notes en vrac/), { target: { value: 'peur des vagues, puis adoré' } })
+    expect(screen.queryByLabelText(/Notes/)).toBeNull()
+    fireEvent.change(screen.getByLabelText('Texte de la rubrique'), { target: { value: 'Léo a adoré la mer.' } })
     expect(screen.getByRole('status').textContent).toBe('Modifié')
 
     await waitFor(() => expect(onIssue).toHaveBeenCalled(), { timeout: 2000 })
-    expect(JSON.parse(String(calls[0]?.init?.body))).toEqual({ title: 'À la mer', notes: 'peur des vagues, puis adoré', text: 'Léo a adoré.' })
+    expect(JSON.parse(String(calls[0]?.init?.body))).toEqual({ title: 'À la mer', text: 'Léo a adoré la mer.' })
     expect(screen.getByRole('status').textContent).toBe('Enregistré')
   })
 

@@ -43,11 +43,11 @@ stockage S3 public, puis re-préparer le numéro : seules les photos sans
 adresse sont déposées, donc retirer et remettre celles déjà déposées, ou
 repartir d'un numéro dupliqué.
 
-## Le prompt n'inclut pas les dernières notes
+## Le prompt n'inclut pas le dernier titre de rubrique
 
 Le bouton attend la fin de l'enregistrement (grisé pendant « Modifié » et
-« Enregistrement… »). Si les notes viennent d'être tapées, patienter une
-seconde.
+« Enregistrement… »). Si le titre vient d'être tapé, patienter une seconde.
+Les notes du carnet, elles, sont enregistrées dès « Noter ».
 
 ## L'API répond une page HTML au lieu de JSON (« Expecting value » côté client)
 

@@ -33,7 +33,7 @@ final class SectionController
         })), 201);
     }
 
-    /** Titre, notes, texte et photos ([{assetId, caption}], dans l'ordre) d'une rubrique. Chaque champ absent reste tel quel. */
+    /** Titre, texte et photos ([{assetId, caption}], dans l'ordre) d'une rubrique. Chaque champ absent reste tel quel. */
     #[Route('/api/issues/{id}/sections/{sectionId}', methods: ['PATCH'])]
     public function patch(string $id, string $sectionId, Request $request, IssueRepository $issues, SectionPhotos $photos): JsonResponse
     {
@@ -41,17 +41,16 @@ final class SectionController
         self::jsonOnly($request);
         $payload = Payload::fromRequest($request);
         $title = $payload->string('title', 120);
-        $notes = $payload->string('notes', 5000, trim: false);
         $text = $payload->string('text', 10000, trim: false);
         $wanted = $payload->objects('photos', SectionPhotos::MAX);
         $payload->check();
 
-        return new JsonResponse(IssueView::full($issues->change($id, static function (Issue $issue) use ($sectionId, $title, $notes, $text, $wanted, $photos): Issue {
+        return new JsonResponse(IssueView::full($issues->change($id, static function (Issue $issue) use ($sectionId, $title, $text, $wanted, $photos): Issue {
             IssueController::editableOnly($issue);
             self::sectionOf($issue, $sectionId);
 
-            return $issue->withSectionChanged($sectionId, static function (Section $s) use ($title, $notes, $text, $wanted, $photos): Section {
-                $s = $s->withFields($title, $notes, $text);
+            return $issue->withSectionChanged($sectionId, static function (Section $s) use ($title, $text, $wanted, $photos): Section {
+                $s = $s->withFields($title, $text);
 
                 return null === $wanted ? $s : $s->withPhotos($photos->resolve($s, $wanted));
             });

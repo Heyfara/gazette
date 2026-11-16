@@ -2,7 +2,7 @@
 
 namespace App\Gazette\Model;
 
-/** Une rubrique du numéro : un titre, des photos, des notes brutes et le texte final. */
+/** Une rubrique du numéro : un titre, des photos et le texte final. Les notes sont dans le carnet du numéro. */
 final readonly class Section
 {
     /**
@@ -11,7 +11,6 @@ final readonly class Section
     public function __construct(
         public string $id,
         public string $title,
-        public string $notes,
         public string $text,
         public array $photos,
     ) {
@@ -19,12 +18,12 @@ final readonly class Section
 
     public static function blank(string $id): self
     {
-        return new self($id, '', '', '', []);
+        return new self($id, '', '', []);
     }
 
-    public function withFields(?string $title = null, ?string $notes = null, ?string $text = null): self
+    public function withFields(?string $title = null, ?string $text = null): self
     {
-        return new self($this->id, $title ?? $this->title, $notes ?? $this->notes, $text ?? $this->text, $this->photos);
+        return new self($this->id, $title ?? $this->title, $text ?? $this->text, $this->photos);
     }
 
     /**
@@ -32,7 +31,7 @@ final readonly class Section
      */
     public function withPhotos(array $photos): self
     {
-        return new self($this->id, $this->title, $this->notes, $this->text, $photos);
+        return new self($this->id, $this->title, $this->text, $photos);
     }
 
     public function photo(string $assetId): ?Photo
@@ -54,7 +53,6 @@ final readonly class Section
         return [
             'id' => $this->id,
             'title' => $this->title,
-            'notes' => $this->notes,
             'text' => $this->text,
             'photos' => array_map(static fn (Photo $p): array => $p->toArray(), $this->photos),
         ];
@@ -68,7 +66,6 @@ final readonly class Section
         return new self(
             (string) $a['id'],
             (string) ($a['title'] ?? ''),
-            (string) ($a['notes'] ?? ''),
             (string) ($a['text'] ?? ''),
             array_values(array_map(Photo::fromArray(...), $a['photos'] ?? [])),
         );

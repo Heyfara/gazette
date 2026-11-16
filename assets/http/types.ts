@@ -14,7 +14,6 @@ export interface PhotoView {
 export interface SectionView {
   id: string
   title: string
-  notes: string
   text: string
   photos: PhotoView[]
 }

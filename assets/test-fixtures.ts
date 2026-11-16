@@ -24,11 +24,10 @@ export const issue: IssueView = {
     {
       id: 's1',
       title: 'À la mer',
-      notes: 'peur des vagues',
       text: 'Léo a adoré.',
       photos: [{ assetId: P1, takenAt: '2026-10-15T14:30:00', city: 'Saint-Malo', country: 'France', people: ['Léo', 'Emma'], caption: '' }],
     },
-    { id: 's2', title: '', notes: '', text: '', photos: [] },
+    { id: 's2', title: '', text: '', photos: [] },
   ],
 }
 

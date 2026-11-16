@@ -43,7 +43,6 @@ export const deleteIssue = (id: string) => getJson<void>(issueUrl(id), undefined
 
 export interface SectionPatch {
   title?: string
-  notes?: string
   text?: string
   photos?: PhotoInput[]
 }

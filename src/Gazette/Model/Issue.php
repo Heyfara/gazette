@@ -155,19 +155,44 @@ final readonly class Issue
      */
     public static function fromArray(array $a): self
     {
+        $month = (string) $a['month'];
+
         return new self(
             (string) $a['id'],
             (int) $a['number'],
             (string) ($a['name'] ?? ''),
             (string) ($a['title'] ?? ''),
-            (string) $a['month'],
+            $month,
             IssueStatus::from((string) ($a['status'] ?? IssueStatus::Draft->value)),
             array_values(array_map(Section::fromArray(...), $a['sections'] ?? [])),
             new \DateTimeImmutable((string) $a['createdAt']),
             isset($a['sentAt']) ? new \DateTimeImmutable((string) $a['sentAt']) : null,
             isset($a['listmonkCampaignId']) ? (int) $a['listmonkCampaignId'] : null,
-            array_values(array_map(Note::fromArray(...), $a['notes'] ?? [])),
+            [...self::oldSectionNotes($a['sections'] ?? [], $month), ...array_map(Note::fromArray(...), $a['notes'] ?? [])],
         );
+    }
+
+    /**
+     * Les notes par rubrique d'avant le carnet, reprises dans le carnet au 1er
+     * du mois (préfixées du titre de la rubrique) ; le fichier est réécrit
+     * sans elles à la modification suivante.
+     *
+     * @param array<array<string, mixed>> $sections
+     *
+     * @return list<Note>
+     */
+    private static function oldSectionNotes(array $sections, string $month): array
+    {
+        $notes = [];
+        foreach ($sections as $s) {
+            $text = trim((string) ($s['notes'] ?? ''));
+            if ('' !== $text) {
+                $title = (string) ($s['title'] ?? '');
+                $notes[] = new Note('r'.substr((string) $s['id'], 0, 7), $month.'-01', ('' === $title ? '' : \sprintf('« %s » : ', $title)).$text);
+            }
+        }
+
+        return $notes;
     }
 
     /**

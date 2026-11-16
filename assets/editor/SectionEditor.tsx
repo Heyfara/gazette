@@ -19,11 +19,11 @@ interface Props {
 }
 
 /**
- * Une rubrique : titre, photos, notes brutes, prompt à coller, texte. Les
+ * Une rubrique : titre, photos, prompt à coller, texte (les notes sont dans le carnet du mois). Les
  * champs texte s'enregistrent tout seuls ; les photos à chaque changement.
  */
 export function SectionEditor({ issue, section, index, onIssue, onDelete, onMoveUp, onMoveDown }: Props) {
-  const [fields, setFields] = useState({ title: section.title, notes: section.notes, text: section.text })
+  const [fields, setFields] = useState({ title: section.title, text: section.text })
   const [picking, setPicking] = useState(false)
   const [photoError, setPhotoError] = useState<Error | null>(null)
   const save = useAutosave(fields, async (value) => onIssue(await patchSection(issue.id, section.id, value)))
@@ -89,18 +89,6 @@ export function SectionEditor({ issue, section, index, onIssue, onDelete, onMove
           )}
         </div>
 
-        <label className="flex flex-col gap-1 text-sm">
-          <span className="text-stone-600 dark:text-slate-400">Notes en vrac (pour le prompt, pas dans le mail)</span>
-          <textarea
-            className={`${field} min-h-20`}
-            value={fields.notes}
-            maxLength={5000}
-            placeholder="première fois à la mer, peur des vagues puis n'a plus voulu sortir de l'eau…"
-            disabled={disabled}
-            onChange={(e) => setFields({ ...fields, notes: e.target.value })}
-          />
-        </label>
-
         <div className="flex flex-col gap-1 text-sm">
           <div className="flex items-center justify-between">
             <span className="text-stone-600 dark:text-slate-400">Texte de la rubrique</span>
@@ -111,6 +99,7 @@ export function SectionEditor({ issue, section, index, onIssue, onDelete, onMove
             value={fields.text}
             maxLength={10000}
             placeholder="Collez ici le texte généré, ou écrivez-le directement."
+            aria-label="Texte de la rubrique"
             disabled={disabled}
             onChange={(e) => setFields({ ...fields, text: e.target.value })}
           />

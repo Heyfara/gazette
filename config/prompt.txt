@@ -7,9 +7,7 @@ Rédige le texte de la rubrique « {{rubrique}} » : un paragraphe de 80 à 120 
 Les photos qui accompagnent la rubrique :
 {{photos}}
 
-Ce qui s'est passé, en vrac (notes de l'auteur) : {{notes}}
-
-Le carnet du mois, noté au fil des jours pour tout le numéro (n'en garde que ce qui concerne cette rubrique, et ignore le reste) :
+Ce qui s'est passé ce mois-ci, noté au fil des jours dans notre carnet (n'en garde que ce qui concerne cette rubrique, et ignore le reste) :
 {{carnet}}
 
 Rubrique précédente du même numéro, pour garder le même ton : {{precedent}}

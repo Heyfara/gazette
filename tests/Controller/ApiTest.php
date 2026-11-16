@@ -108,12 +108,12 @@ final class ApiTest extends WebTestCase
         [$s1, $s2] = array_column($issue['sections'], 'id');
 
         $issue = $this->json('PATCH', "/api/issues/$id/sections/$s1", [
-            'notes' => "première fois à la mer\n",
             'text' => "Léo a adoré.\n\nEmma aussi.",
             'photos' => [['assetId' => FakeImmich::P2, 'caption' => 'Léo face aux vagues'], ['assetId' => FakeImmich::P1, 'caption' => ''], ['assetId' => FakeImmich::P2, 'caption' => 'doublon ignoré']],
         ]);
         $section = $issue['sections'][0];
-        self::assertSame("première fois à la mer\n", $section['notes'], 'les notes gardent leurs sauts de ligne');
+        self::assertSame("Léo a adoré.\n\nEmma aussi.", $section['text'], 'le texte garde ses sauts de ligne');
+        self::assertArrayNotHasKey('notes', $section, 'les notes sont dans le carnet du numéro');
         self::assertSame([FakeImmich::P2, FakeImmich::P1], array_column($section['photos'], 'assetId'));
         self::assertSame([
             'assetId' => FakeImmich::P2, 'takenAt' => '2026-10-15T16:00:00', 'city' => 'Saint-Malo', 'country' => 'France', 'people' => ['Léo'], 'caption' => 'Léo face aux vagues', 'mediaUrl' => null, 'mediaId' => null,
@@ -128,7 +128,7 @@ final class ApiTest extends WebTestCase
 
         $prompt = $this->json('GET', "/api/issues/$id/sections/$s1/prompt")['prompt'];
         self::assertStringContainsString('1. 15/10/2026, Saint-Malo (France), personnes : Léo, Emma, légende : Emma', $prompt);
-        self::assertStringContainsString('(notes de l\'auteur) : première fois à la mer', $prompt);
+        self::assertStringNotContainsString('{{notes}}', $prompt);
         self::assertStringContainsString('La famille : Alice (la maman)', $prompt);
 
         $issue = $this->json('PUT', "/api/issues/$id/sections-order", ['order' => [$s2, $s1]]);
