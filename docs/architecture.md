@@ -26,6 +26,7 @@ assets/
   hooks/              usePath (routage minimal), useJson (une requête), useAutosave (enregistrement différé)
   http/               client.ts (les appels) et types.ts (ce que renvoie l'API)
   ui/                 styles partagés, formats (mois, dates), ErrorMessage
+  public/favicon.svg  l'icône (journal dans l'enveloppe), servie à nom fixe sous /build/favicon.svg : le dashboard du homelab l'affiche par cette adresse, ne pas la renommer
 ```
 
 ## Données
